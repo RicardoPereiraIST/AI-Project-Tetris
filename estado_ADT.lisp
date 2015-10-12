@@ -12,13 +12,16 @@
 		:pecas-colocadas pieces_placed
 		:tabuleiro board)
 )
-;;Não percebo se preciso dos selectores ou se são criados sozinhos(enunciado)
+
 (defun copia-estado(state)
-	(cria-estado(estado-pontos state  ;;\( necessario para chamada de funcao
-				estado-pecas-por-colocar state
-				estado-pecas-colocadas state
-				estado-tabuleiro state)
-	)
+	(cria-estado (estado-pontos state) 
+		;;??
+				(copy-seq(estado-pecas-por-colocar state))
+				(copy-seq(estado-pecas-colocadas state))
+				(copy-seq(estado-tabuleiro state))
+	)	
+)
+
 )
 (defun estados-iguais-p(state1 state2)
 	(cond ((and (equal (estado-pontos state1)(estado-pontos state2))
