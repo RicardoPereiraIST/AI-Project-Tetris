@@ -36,3 +36,41 @@
 	(if(and(<= int1 17)(>= int1 0)(<= int2 9)(>= int2 0))
 		(setf (aref tab1 int1 int2) 1))
 )	
+
+(defun tabuleiro-remove-linha!(tab num_linha)
+	(if (equal num_linha 0)
+		;true
+		(preenche-linha tab num_linha 9 nil)
+		;false
+		(progn
+			(copia-linha-acima tab num_linha)
+			(tabuleiro-remove-linha! tab (- num_linha 1))	
+		)
+	)
+
+)
+
+(defun preenche-linha(tab num_linha num_coluna value)
+	(if (equal num_coluna 0)
+		(setf (aref tab num_linha num_coluna) value)
+		(progn
+			(setf (aref tab num_linha num_coluna) value)
+			(preenche-linha tab num_linha (- num_coluna 1) value)
+		)
+		
+	)
+)
+
+(defun copia-linha-acima(tab num_linha)
+	(if (equal (- num_linha 1) 0)
+		(return-from copia-linha-acima nil)
+		(progn
+			(loop for num_coluna from 0 to 9 do
+				(setf (aref tab num_linha num_coluna) 
+					(aref tab (- num_linha 1) num_coluna)
+				)
+			)
+			(copia-linha-acima tab (- num_linha 1))
+		)
+	)
+)
