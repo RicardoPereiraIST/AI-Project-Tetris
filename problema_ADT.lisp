@@ -10,4 +10,6 @@
 		(equal(estado-pecas-por-colocar state) nil)))
 	t
 	nil)
+
+
 ;;WTF?? CAMPOS = FUNCOES

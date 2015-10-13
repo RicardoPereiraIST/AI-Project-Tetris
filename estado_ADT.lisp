@@ -1,8 +1,8 @@
 ;;Estou a utilizar nomes em ingles para os argumentos das funcoes, e portugues para os campos
 (defstruct estado
-	pontos
+	pontos ;;optional
 	pecas-por-colocar
-	pecas-colocadas
+	pecas-colocadas ;;optional
 	tabuleiro)
 
 (defun cria-estado (points pieces_to_place pieces_placed board)

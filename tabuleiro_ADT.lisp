@@ -19,7 +19,7 @@
 		(return-from tabuleiro-altura-coluna i)
 		)	
 	)
-	return 0
+	(return 0)
 )
 
 (defun tabuleiro-linha-completa (tab int)
@@ -35,4 +35,4 @@
 (defun tabuleiro-preenche!(tab1 int1 int2)
 	(if(and(<= int1 17)(>= int1 0)(<= int2 9)(>= int2 0))
 		(setf (aref tab1 int1 int2) 1))
-)
+)	
