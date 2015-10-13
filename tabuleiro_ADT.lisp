@@ -1,37 +1,38 @@
-(defun cria-tabuleiro
+(defun cria-tabuleiro()
 	(make-array (list 18 10))
-		)
 )
 
 ;;(defun copia-tabuleiro
 ;;	(cria-tabuleiro)
 
 (defun tabuleiro-preenchido-p (tab int1 int2)
-	(if (equal(aref(tab int1 int2)) 1)
-		return t)
-	(else (return nil))
+	(if 
+	(equal(aref tab int1 int2) 1)
+	t
+	nil)
 )
 
 (defun tabuleiro-altura-coluna (tab int)
-	(loop as i from 17 downto 0
-		(if(equal(aref(tab i int)) 1)
-			return i)
+	(loop for i from 17 downto 0 do
+		(if 
+		(equal(aref tab i int) 1)
+		(return-from tabuleiro-altura-coluna i)
+		)	
 	)
-	(t 0)
+	return 0
 )
 
 (defun tabuleiro-linha-completa (tab int)
-	(dotimes(j 10)
-		(if(equal(aref(tab int j)) 0)
-			return 0
+	(loop for j from 0 to 9 do
+		(if
+		(equal(aref tab int j) nil)
+		(return-from tabuleiro-linha-completa nil)
 		)
 	)
-	(t 1)
+	t
 )
 
 (defun tabuleiro-preenche!(tab1 int1 int2)
-	(cond(and(<= int1 17)(>= int1 0)(<= int2 9)(>= int2 0))
-		(setf(aref(tab int1 int2) 1))
-	)
+	(if(and(<= int1 17)(>= int1 0)(<= int2 9)(>= int2 0))
+		(setf (aref tab1 int1 int2) 1))
 )
-
