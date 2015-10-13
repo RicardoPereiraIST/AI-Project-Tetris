@@ -50,6 +50,21 @@
 
 )
 
+
+(defun tabuleiro-topo-preenchido-p(tab)
+	;mudar para recursivo
+	
+	(loop for num_coluna from 0 to 9 do
+		(if (equal (aref tab 17 num_coluna) 1)
+			(return-from tabuleiro-topo-preenchido-p 1)
+		)
+	)
+	(return-from tabuleiro-topo-preenchido-p 0)
+)
+
+
+
+
 (defun preenche-linha(tab num_linha num_coluna value)
 	(if (equal num_coluna 0)
 		(setf (aref tab num_linha num_coluna) value)
