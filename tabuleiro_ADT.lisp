@@ -7,7 +7,7 @@
 
 (defun tabuleiro-preenchido-p (tab int1 int2)
 	(if 
-	(equal(aref tab int1 int2) 1)
+	(equal(aref tab int1 int2) t)
 	t
 	nil)
 )
@@ -15,7 +15,7 @@
 (defun tabuleiro-altura-coluna (tab int)
 	(loop for i from 17 downto 0 do
 		(if 
-		(equal(aref tab i int) 1)
+		(equal(aref tab i int) t)
 		(return-from tabuleiro-altura-coluna i)
 		)	
 	)
@@ -34,7 +34,7 @@
 
 (defun tabuleiro-preenche!(tab1 int1 int2)
 	(if(and(<= int1 17)(>= int1 0)(<= int2 9)(>= int2 0))
-		(setf (aref tab1 int1 int2) 1))
+		(setf (aref tab1 int1 int2) t))
 )	
 
 (defun tabuleiro-remove-linha!(tab num_linha)
@@ -55,11 +55,11 @@
 	;mudar para recursivo
 	
 	(loop for num_coluna from 0 to 9 do
-		(if (equal (aref tab 17 num_coluna) 1)
-			(return-from tabuleiro-topo-preenchido-p 1)
+		(if (equal (aref tab 17 num_coluna) t)
+			(return-from tabuleiro-topo-preenchido-p t)
 		)
 	)
-	(return-from tabuleiro-topo-preenchido-p 0)
+	(return-from tabuleiro-topo-preenchido-p nil)
 )
 
 (defun tabuleiros-iguais-p(tab1 tab2)
@@ -74,6 +74,26 @@
 	t
 )
 
+(defun tabuleiro->array(tab)
+	(setf array (make-array (list 18 10)))
+	(loop for num_coluna from 0 to 9 do
+		(loop for num_linha from 0 to 17 do
+			(setf (aref array num_linha num_coluna) 
+				(aref tab num_linha num_coluna))
+		)
+	)
+	(return-from tabuleiro->array array)
+)
+
+(defun array->tabuleiro(array)
+	(setf tabuleiro (cria-tabuleiro))
+	(loop for num_coluna from 0 to 9 do
+		(loop for num_linha from 0 to 17 do
+			(tabuleiro-preenche tabuleiro num_linha num_coluna)
+		)
+	)
+	(return-from array->tabuleiro tabuleiro)
+)
 
 ; funcoes auxiliares 
 
