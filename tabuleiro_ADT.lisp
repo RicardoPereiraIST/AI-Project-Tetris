@@ -89,10 +89,22 @@
 	(setf tabuleiro (cria-tabuleiro))
 	(loop for num_coluna from 0 to 9 do
 		(loop for num_linha from 0 to 17 do
-			(tabuleiro-preenche tabuleiro num_linha num_coluna)
+			(setf (aref tabuleiro num_linha num_coluna) 
+				(aref array num_linha num_coluna))
 		)
 	)
 	(return-from array->tabuleiro tabuleiro)
+)
+
+(defun copia_tabuleiro(tab)
+	(setf tabuleiro (cria-tabuleiro))
+	(loop for num_coluna from 0 to 9 do
+		(loop for num_linha from 0 to 17 do
+			(setf (aref tabuleiro num_linha num_coluna) 
+				(aref tab num_linha num_coluna))
+		)
+	)
+	(return-from copia_tabuleiro tabuleiro)
 )
 
 ; funcoes auxiliares 
