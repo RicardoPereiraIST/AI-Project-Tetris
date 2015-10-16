@@ -62,8 +62,20 @@
 	(return-from tabuleiro-topo-preenchido-p 0)
 )
 
+(defun tabuleiros-iguais-p(tab1 tab2)
+	(loop for num_coluna from 0 to 9 do
+		(loop for num_linha from 0 to 17 do
+			(if(not (equal (aref tab1 num_linha num_coluna)
+					(aref tab2 num_linha num_coluna)))
+				(return-from tabuleiros-iguais-p nil)
+			)
+		)
+	)
+	t
+)
 
 
+; funcoes auxiliares 
 
 (defun preenche-linha(tab num_linha num_coluna value)
 	(if (equal num_coluna 0)
@@ -89,3 +101,5 @@
 		)
 	)
 )
+
+
