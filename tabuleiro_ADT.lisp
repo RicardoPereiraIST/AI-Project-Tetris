@@ -20,10 +20,10 @@
 	nil)
 )
 
-(defun tabuleiro-altura-coluna (tab int)
+(defun tabuleiro-altura-coluna (tab int)              ;Mudei de =1 para =t a representacao de preenchido
 	(loop for i from 17 downto 0 do
 		(if 
-		(equal(aref tab i int) 1)
+		(equal(aref tab i int) t)
 		(return-from tabuleiro-altura-coluna (+ i 1))
 		)	
 	)
