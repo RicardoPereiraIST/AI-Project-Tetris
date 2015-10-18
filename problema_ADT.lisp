@@ -343,6 +343,7 @@
 			(not(tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1) (+ i 2))))
 			(push(cria-accao i '((T T T)(nil nil T))) lista)
 			()
+			)
 		)
 	)
 )
@@ -355,3 +356,15 @@
 ;(defconstant peca-l1 (make-array (list 2 3) :initial-contents '((T nil nil)(T T T))))
 ;(defconstant peca-l2 (make-array (list 3 2) :initial-contents '((nil T)(nil T)(T T))))
 ;(defconstant peca-l3 (make-array (list 2 3) :initial-contents '((T T T)(nil nil T))))
+(defun accao-i1(state)
+	nil)
+
+;(defun accao-o0(state)
+;	(let lista
+;		(loop for i from 0 to 8 do
+;			(loop for j from 1 to 9 do
+;				(when (tabuleiro-altura-coluna (estado-tabuleiro state)) 
+;			)
+;		)
+;	)
+;)
