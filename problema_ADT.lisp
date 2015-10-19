@@ -344,6 +344,7 @@
 			(not(tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1) (+ i 2))))
 			(push(cria-accao i '((T T T)(nil nil T))) lista)
 			()
+			)
 		)
 	)
 )
@@ -356,7 +357,6 @@
 ;(defconstant peca-l1 (make-array (list 2 3) :initial-contents '((T nil nil)(T T T))))
 ;(defconstant peca-l2 (make-array (list 3 2) :initial-contents '((nil T)(nil T)(T T))))
 ;(defconstant peca-l3 (make-array (list 2 3) :initial-contents '((T T T)(nil nil T))))
-
 
 ;;peca t
 ;(defconstant peca-t0 (make-array (list 2 3) :initial-contents '((T T T)
@@ -438,4 +438,74 @@
 			(push (cria-accao i '((nil T)(T T)(nil T))))
 		)
 	)
+)
+
+(defun accao-i1(state)
+	nil)
+
+
+;;peca j
+;(defconstant peca-j0 (make-array (list 3 2) :initial-contents '((T T)(nil T)(nil T))))
+
+(defun accao-j0(state)
+	(setf lista nil)
+		(loop for i from 0 to 8 do
+			(push(cria-accao i '((T T)(nil T)(nil T))) lista)
+		)
+)
+
+;(defconstant peca-j1 (make-array (list 2 3) :initial-contents '((T T T)(T nil nil))))
+
+(defun accao-j1(state)
+	(setf lista nil)
+		(loop for i from 0 to 7 do
+			(push(cria-accao i '((T T T)(T nil nil))) lista)
+		)
+)
+
+;(defconstant peca-j2 (make-array (list 3 2) :initial-contents '((T nil)(T nil)(T T))))
+
+(defun accao-j2(state)
+	(setf lista nil)
+		(loop for i from 0 to 8 do
+			(push(cria-accao i '((T nil)(T nil)(T T))) lista)
+		)
+)
+
+;(defconstant peca-j3 (make-array (list 2 3) :initial-contents '((nil nil T)(T T T))))
+
+(defun accao-j3(state)
+	(setf lista nil)
+		(loop for i from 0 to 7 do
+			(push(cria-accao i '((nil nil T)(T T T))) lista)
+		)
+)
+
+;;peca o
+;(defconstant peca-o0 (make-array (list 2 2) :initial-element T))
+
+(defun accao-o0(state)
+	(setf lista nil)
+		(loop for i from 0 to 8 do
+			(push(cria-accao i '((T T)(T T))) lista)
+		)
+)
+
+;;peca s
+;(defconstant peca-s0 (make-array (list 2 3) :initial-contents '((T T nil)(nil T T))))
+
+(defun accao-s0(state)
+	(setf lista nil)
+		(loop for i from 0 to 7 do
+			(push(cria-accao i '((T T nil)(nil T T))) lista)
+		)
+)
+
+;(defconstant peca-s1 (make-array (list 3 2) :initial-contents '((nil T)(T T)(T nil))))
+
+(defun accao-s1(state)
+	(setf lista nil)
+		(loop for i from 0 to 8 do
+			(push(cria-accao i '((nil T)(T T)(T nil))) lista)
+		)
 )
