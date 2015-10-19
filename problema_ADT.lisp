@@ -359,12 +359,70 @@
 (defun accao-i1(state)
 	nil)
 
-;(defun accao-o0(state)
-;	(let lista
-;		(loop for i from 0 to 8 do
-;			(loop for j from 1 to 9 do
-;				(when (tabuleiro-altura-coluna (estado-tabuleiro state)) 
-;			)
-;		)
-;	)
-;)
+
+;;peca j
+;(defconstant peca-j0 (make-array (list 3 2) :initial-contents '((T T)(nil T)(nil T))))
+
+(defun accao-j0(state)
+	(setf lista nil)
+		(loop for i from 0 to 8 do
+			(push(cria-accao i '((T T)(nil T)(nil T))) lista)
+		)
+)
+
+;(defconstant peca-j1 (make-array (list 2 3) :initial-contents '((T T T)(T nil nil))))
+
+(defun accao-j1(state)
+	(setf lista nil)
+		(loop for i from 0 to 7 do
+			(push(cria-accao i '((T T T)(T nil nil))) lista)
+		)
+)
+
+;(defconstant peca-j2 (make-array (list 3 2) :initial-contents '((T nil)(T nil)(T T))))
+
+(defun accao-j2(state)
+	(setf lista nil)
+		(loop for i from 0 to 8 do
+			(push(cria-accao i '((T nil)(T nil)(T T))) lista)
+		)
+)
+
+;(defconstant peca-j3 (make-array (list 2 3) :initial-contents '((nil nil T)(T T T))))
+
+(defun accao-j3(state)
+	(setf lista nil)
+		(loop for i from 0 to 7 do
+			(push(cria-accao i '((nil nil T)(T T T))) lista)
+		)
+)
+
+;;peca o
+;(defconstant peca-o0 (make-array (list 2 2) :initial-element T))
+
+(defun accao-o0(state)
+	(setf lista nil)
+		(loop for i from 0 to 8 do
+			(push(cria-accao i '((T T)(T T))) lista)
+		)
+)
+
+;;peca s
+;(defconstant peca-s0 (make-array (list 2 3) :initial-contents '((T T nil)(nil T T))))
+
+(defun accao-s0(state)
+	(setf lista nil)
+		(loop for i from 0 to 7 do
+			(push(cria-accao i '((T T nil)(nil T T))) lista)
+		)
+)
+
+;(defconstant peca-s1 (make-array (list 3 2) :initial-contents '((nil T)(T T)(T nil))))
+
+(defun accao-s1(state)
+	(setf lista nil)
+		(loop for i from 0 to 8 do
+			(push(cria-accao i '((nil T)(T T)(T nil))) lista)
+		)
+)
+
