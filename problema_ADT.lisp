@@ -256,6 +256,7 @@
 	)
 )
 
+
 ;(defun accao-l(state)
 ;	(cons (accao-l0 state) (accao-l1 state) (accao-l2 state) (accao-l3 state))
 ;)
@@ -344,7 +345,7 @@
 ;			(not(tabuleiro-preenchido-p (estado-tabuleiro state) linha (+ i 1)))
 ;			(not(tabuleiro-preenchido-p (estado-tabuleiro state) linha (+ i 2)))
 ;			(not(tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1) (+ i 2))))
-			(push(cria-accao k '((T T T)(nil nil T))) lista)
+				(push(cria-accao k '((T T T)(nil nil T))) lista)
 ;			()
 ;		)
 	)
