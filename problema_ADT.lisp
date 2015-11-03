@@ -185,9 +185,10 @@
 
 
 (defun estado-final-p (state)
-	(if (or (equal(estado-pecas-por-colocar state) 0) (tabuleiro-topo-preenchido (estado-tabuleiro state)))) 
+	(if (or (equal(estado-pecas-por-colocar state) 0) (tabuleiro-topo-preenchido (estado-tabuleiro state))) 
 	t
 	nil)
+)
 
 ;----------------------------------------Tipo PROBLEMA---------------------------------------------------
 (defstruct problema 
@@ -336,6 +337,7 @@
 
 (defun accao-l3 (state)
 	(setf lista nil)
+
 	(loop for k from 0 to 7 do
 ;		(setf linha (max (tabuleiro-altura-coluna (estado-tabuleiro state) i)
 ;			(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1))
@@ -355,3 +357,155 @@
 ;(setf i (cria-accao 3 '(T T T T)))
 ;(setf *a*(cria-tabuleiro))
 ;(setf *est*(cria-estado 0 'i nil *a*)) 
+
+;;peca t
+;(defconstant peca-t0 (make-array (list 2 3) :initial-contents '((T T T)
+																;(nil T nil))))
+(defun accao-t0 (state)
+	(setf lista nil)
+	(loop for i from 0 to 7 do
+		; A TESTAR LINHA SEGUINTE
+		(setf linha (max (tabuleiro-altura-coluna (estado-tabuleiro state) i)
+			(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1))
+			(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 2))))
+
+		(if (and (not(tabuleiro-preenchido-p (estado-tabuleiro state) linha i))
+			(not (tabuleiro-preenchido-p (estado-tabuleiro state) linha (+ i 1)))
+			(not (tabuleiro-preenchido-p (estado-tabuleiro state) linha (+ i 2)))
+			(not (tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1)
+				(+ i 1))))
+			(push (cria-accao i '((T T T) (nil T nil))) lista)
+		)
+	)
+
+)
+
+
+
+
+
+;(defconstant peca-t1 (make-array (list 3 2) :initial-contents '((T nil)(T T)(T nil))))
+(defun accao-t1 (state)
+	(setf lista nil)
+	(loop for i from 0 to 8 do
+		(setf linha (max (tabuleiro-altura-coluna (estado-tabuleiro state) i)
+			(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1))))
+
+		(if (and (not (tabuleiro-preenchido-p (estado-tabuleiro state) linha i))
+			(not (tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1) i))
+			(not (tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1) (+ i 1)))
+			(not (tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 2) i)))
+			(push (cria-accao i '((T nil)(T T)(T nil))))
+
+		)
+	)
+)
+;(defconstant peca-t2 (make-array (list 2 3) :initial-contents '((nil T nil)(T T T))))
+(defun accao-t2 (state)
+	(setf lista nil)
+	(loop for i from 0 to 7 do
+		; A TESTAR LINHA SEGUINTE
+		(setf linha (max (tabuleiro-altura-coluna (estado-tabuleiro state) i)
+			(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1))
+			(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 2))))
+
+		(if (and (not (tabuleiro-preenchido-p (estado-tabuleiro state) linha (+ i 1)))
+			(not (tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1)
+				i))
+			(not (tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1)
+				(+ i 1)))
+			(not (tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1)
+				(+ i 2))))
+			(push (cria-accao i '((nil T nil) (T T T))) lista)
+		)
+	)
+
+)
+
+
+;(defconstant peca-t3 (make-array (list 3 2) :initial-contents '((nil T)(T T)(nil T))))
+
+(defun accao-t3 (state)
+	(setf lista nil)
+	(loop for i from 0 to 8 do
+		(setf linha (max (tabuleiro-altura-coluna (estado-tabuleiro state) i)
+			(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1))))
+
+		(if (and (not (tabuleiro-preenchido-p (estado-tabuleiro state) linha (+ i 1)))
+			(not (tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1) i))
+			(not (tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1) (+ i 1)))
+			(not (tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 2) (+ i 1))))
+			(push (cria-accao i '((nil T)(T T)(nil T))))
+		)
+	)
+)
+
+(defun accao-i1(state)
+	nil)
+
+
+;;peca j
+;(defconstant peca-j0 (make-array (list 3 2) :initial-contents '((T T)(nil T)(nil T))))
+
+(defun accao-j0(state)
+	(setf lista nil)
+		(loop for i from 0 to 8 do
+			(push(cria-accao i '((T T)(nil T)(nil T))) lista)
+		)
+)
+
+;(defconstant peca-j1 (make-array (list 2 3) :initial-contents '((T T T)(T nil nil))))
+
+(defun accao-j1(state)
+	(setf lista nil)
+		(loop for i from 0 to 7 do
+			(push(cria-accao i '((T T T)(T nil nil))) lista)
+		)
+)
+
+;(defconstant peca-j2 (make-array (list 3 2) :initial-contents '((T nil)(T nil)(T T))))
+
+(defun accao-j2(state)
+	(setf lista nil)
+		(loop for i from 0 to 8 do
+			(push(cria-accao i '((T nil)(T nil)(T T))) lista)
+		)
+)
+
+;(defconstant peca-j3 (make-array (list 2 3) :initial-contents '((nil nil T)(T T T))))
+
+(defun accao-j3(state)
+	(setf lista nil)
+		(loop for i from 0 to 7 do
+			(push(cria-accao i '((nil nil T)(T T T))) lista)
+		)
+)
+
+;;peca o
+;(defconstant peca-o0 (make-array (list 2 2) :initial-element T))
+
+(defun accao-o0(state)
+	(setf lista nil)
+		(loop for i from 0 to 8 do
+			(push(cria-accao i '((T T)(T T))) lista)
+		)
+)
+
+;;peca s
+;(defconstant peca-s0 (make-array (list 2 3) :initial-contents '((T T nil)(nil T T))))
+
+(defun accao-s0(state)
+	(setf lista nil)
+		(loop for i from 0 to 7 do
+			(push(cria-accao i '((T T nil)(nil T T))) lista)
+		)
+)
+
+;(defconstant peca-s1 (make-array (list 3 2) :initial-contents '((nil T)(T T)(T nil))))
+
+(defun accao-s1(state)
+	(setf lista nil)
+		(loop for i from 0 to 8 do
+			(push(cria-accao i '((nil T)(T T)(T nil))) lista)
+		)
+)
