@@ -2,6 +2,17 @@
 	(make-array (list 18 10))
 )
 
+(defun copia-tabuleiro(tab)
+	(setf tabuleiro (cria-tabuleiro))
+	(loop for num_coluna from 0 to 9 do
+		(loop for num_linha from 0 to 17 do
+			(setf (aref tabuleiro num_linha num_coluna) 
+				(aref tab num_linha num_coluna))
+		)
+	)
+	(return-from copia_tabuleiro tabuleiro)
+)
+
 (defun tabuleiro-preenchido-p (tab int1 int2)
 	(if 
 	(equal(aref tab int1 int2) t)
@@ -9,10 +20,10 @@
 	nil)
 )
 
-(defun tabuleiro-altura-coluna (tab int)
+(defun tabuleiro-altura-coluna (tab int)              ;Mudei de =1 para =t a representacao de preenchido
 	(loop for i from 17 downto 0 do
 		(if 
-		(equal(aref tab i int) 1)
+		(equal(aref tab i int) t)
 		(return-from tabuleiro-altura-coluna (+ i 1))
 		)	
 	)
@@ -91,17 +102,6 @@
 		)
 	)
 	(return-from array->tabuleiro tabuleiro)
-)
-
-(defun copia_tabuleiro(tab)
-	(setf tabuleiro (cria-tabuleiro))
-	(loop for num_coluna from 0 to 9 do
-		(loop for num_linha from 0 to 17 do
-			(setf (aref tabuleiro num_linha num_coluna) 
-				(aref tab num_linha num_coluna))
-		)
-	)
-	(return-from copia_tabuleiro tabuleiro)
 )
 
 ; funcoes auxiliares 
