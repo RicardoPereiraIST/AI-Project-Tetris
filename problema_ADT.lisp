@@ -1,23 +1,4 @@
-<<<<<<< HEAD
-;;-------------------------------Tipo ACCAO----------------------------------------
-(defstruct accao 
-		nr_coluna
-		configuracao)
-
-(defun cria-accao (int lst) 
-	(make-accao 
-			:nr_coluna int
-			:configuracao lst)
-)
-
-(defun accao-coluna (act)
-	(accao-nr_coluna act))
-
-
-(defun accao-peca (act)
-	(accao-configuracao act))
-=======
-(load "utils.fas")
+;(load "utils.lisp")
 ;;-------------------------------Tipo ACCAO----------------------------------------
 (defun cria-accao (int array) 
 	(cons int array)
@@ -28,10 +9,8 @@
 )
 
 (defun accao-peca (act)	
-	(cdr act))
-
->>>>>>> Miguel
-
+	(cdr act)
+)
 
 ;-----------------------------------------------Tipo TABULEIRO-----------------------------------
 (defun cria-tabuleiro()
@@ -48,30 +27,28 @@
 (defun tabuleiro-altura-coluna (tab int)
 	(loop for i from 17 downto 0 do
 		(if 
-<<<<<<< HEAD
 		(equal(aref tab i int) t)
-=======
 		(tabuleiro-preenchido-p tab i int)
->>>>>>> Miguel
 		(return-from tabuleiro-altura-coluna (+ i 1))
 		)	
 	)
 	0
 )
 
-<<<<<<< HEAD
 (defun tabuleiro-linha-completa (tab int)
 	(loop for j from 0 to 9 do
 		(if
 		(equal(aref tab int j) nil)
 		(return-from tabuleiro-linha-completa nil)
-=======
+		)
+	)
+)	
+
 (defun tabuleiro-linha-completa-p (tab int)
 	(loop for j from 0 to 9 do
 		(if
 		(equal(aref tab int j) nil)
 		(return-from tabuleiro-linha-completa-p nil)   ;PROBLEMA AQUI
->>>>>>> Miguel
 		)
 	)
 	t
@@ -118,65 +95,41 @@
 	)
 	t
 )
-
-<<<<<<< HEAD
-(defun tabuleiro->array(tab)
-	(setf array (make-array (list 18 10)))
-=======
 (defun tabuleiro->array (tab)
 	(let ((array (make-array (list 18 10))))
 
->>>>>>> Miguel
+
 	(loop for num_coluna from 0 to 9 do
 		(loop for num_linha from 0 to 17 do
 			(setf (aref array num_linha num_coluna) 
 				(aref tab num_linha num_coluna))
 		)
 	)
-<<<<<<< HEAD
-	(return-from tabuleiro->array array)
-)
-
-(defun array->tabuleiro(array)
-	(setf tabuleiro (cria-tabuleiro))
-=======
 	array
 	)
 )
 	
 (defun array->tabuleiro(array)
 	(let ((tabuleiro (cria-tabuleiro)))
->>>>>>> Miguel
+
 	(loop for num_coluna from 0 to 9 do
 		(loop for num_linha from 0 to 17 do
 			(setf (aref tabuleiro num_linha num_coluna) 
 				(aref array num_linha num_coluna))
 		)
 	)
-<<<<<<< HEAD
-	(return-from array->tabuleiro tabuleiro)
-)
-
-(defun copia_tabuleiro(tab)
-	(setf tabuleiro (cria-tabuleiro))
-=======
 	tabuleiro)
 )
 
 (defun copia-tabuleiro(tab)
 	(let ((tabuleiro (cria-tabuleiro)))
->>>>>>> Miguel
 	(loop for num_coluna from 0 to 9 do
 		(loop for num_linha from 0 to 17 do
 			(setf (aref tabuleiro num_linha num_coluna) 
 				(aref tab num_linha num_coluna))
 		)
 	)
-<<<<<<< HEAD
-	(return-from copia_tabuleiro tabuleiro)
-=======
 	tabuleiro)
->>>>>>> Miguel
 )
 
 ; funcoes auxiliares 
@@ -222,12 +175,8 @@
 
 (defun copia-estado(state)
 	(make-estado 
-<<<<<<< HEAD
-		:pontos (estado-pontos state)  
-=======
 		:pontos (estado-pontos state)    ;PROBLEMA, se fizermos (eq(estado-pecas-colocadas estado1) 
 										;				(estado-pecas-colocadas estado2))), devolve T quando nao devia	
->>>>>>> Miguel
 		:pecas-por-colocar (estado-pecas-por-colocar state) 
 		:pecas-colocadas (estado-pecas-colocadas state) 
 		:tabuleiro (estado-tabuleiro state)) 
@@ -594,15 +543,15 @@
 
 
 
-;(defun resultado(state action)
-;	(let ((state_var (copia-estado state))
-;		(peca_a_colocar (car(estado-pecas-por-colocar state_var))))
-;		
-;		(pop(estado-pecas-por-colocar state_var))
-;		(push peca_a_colocar (estado-pecas-colocadas state_var))
-;		;(coloca-peca (estado-tabuleiro state_var) action))
-;	)
-;)
+(defun resultado(state action)
+	(let ((state_var (copia-estado state))
+		(peca_a_colocar (car(estado-pecas-por-colocar state_var))))
+		
+		(pop(estado-pecas-por-colocar state_var))
+		(push peca_a_colocar (estado-pecas-colocadas state_var))
+		;(coloca-peca (estado-tabuleiro state_var) action))
+	)
+)
 
 
 ;(defun coloca-peca (tabuleiro peca))
