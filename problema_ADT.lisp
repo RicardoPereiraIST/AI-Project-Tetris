@@ -174,12 +174,15 @@
 )
 
 (defun copia-estado(state)
+	(setf novo-pecas-por-colocar (copy-list (estado-pecas-por-colocar state) ))
+	(setf novo-pecas-colocadas (copy-list (estado-pecas-colocadas state)))
+	(setf novo-tabuleiro (copia-tabuleiro (estado-tabuleiro state)))
+
 	(make-estado 
-		:pontos (estado-pontos state)    ;PROBLEMA, se fizermos (eq(estado-pecas-colocadas estado1) 
-										;				(estado-pecas-colocadas estado2))), devolve T quando nao devia	
-		:pecas-por-colocar (estado-pecas-por-colocar state) 
-		:pecas-colocadas (estado-pecas-colocadas state) 
-		:tabuleiro (estado-tabuleiro state)) 
+		:pontos (estado-pontos state)    	
+		:pecas-por-colocar novo-pecas-por-colocar
+		:pecas-colocadas novo-pecas-colocadas
+		:tabuleiro novo-tabuleiro) 
 )
 
 
