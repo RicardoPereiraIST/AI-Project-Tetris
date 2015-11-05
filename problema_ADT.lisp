@@ -60,11 +60,14 @@
 (defun tabuleiro-remove-linha!(tab num_linha)
 	(if (equal num_linha 0)
 		;true
-		(preenche-linha tab num_linha 9 nil)
+		(progn
+			(copia-linha-abaixo tab num_linha)
+			;(preenche-linha tab num_linha 9 nil)
+		)
 		;false
 		(progn
-			(copia-linha-acima tab num_linha)
-			(tabuleiro-remove-linha! tab (- num_linha 1))	
+			(copia-linha-abaixo tab num_linha)
+			(tabuleiro-remove-linha! tab (+ num_linha 1))	
 		)
 	)
 
@@ -143,18 +146,8 @@
 	)
 )
 
-(defun copia-linha-acima(tab num_linha)
-	(if (equal (- num_linha 1) 0)
-		(return-from copia-linha-acima nil)
-		(progn
-			(loop for num_coluna from 0 to 9 do
-				(setf (aref tab num_linha num_coluna) 
-					(aref tab (- num_linha 1) num_coluna)
-				)
-			)
-			(copia-linha-acima tab (- num_linha 1))
-		)
-	)
+(defun copia-linha-abaixo(tab num_linha)
+
 )
 ;-------------------------------------------------Tipo ESTADO
 (defstruct estado
@@ -588,3 +581,8 @@
 ;(setf *a*(cria-tabuleiro))
 ;(setf *est1*(cria-estado 0 '(l) nil *a*))
 ;(preenche-linha *a* 1 9 t)
+
+(setf Tab (cria-tabuleiro))
+(preenche-linha Tab 2 9 T)
+(setf (aref Tab 0 0) T)
+(setf (aref Tab 3 3) T)
