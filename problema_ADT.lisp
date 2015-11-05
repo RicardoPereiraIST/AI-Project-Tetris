@@ -491,7 +491,8 @@
 )
 (defun calcula-onde-desenha(tabu min action)		;Calcula a posicao mais abaixo onde pode ser desenhada a peca
 	(let ((k min)
-		(nr-linhas (first(array-dimensions(accao-peca action)))))
+		;(nr-linhas (first(array-dimensions(accao-peca action)))))
+		)
 
 		(loop while (and (> k 0) (posso-desenhar tabu action k)) do
 			(decf k 1)
@@ -528,8 +529,7 @@
 		(nr-linhas (first(array-dimensions(accao-peca action))))
 		(nr-colunas (second(array-dimensions(accao-peca action))))
 		(i altura)
-		(x 0)
-		(y 0))
+		)
 
 
 		(when (< i 18) 
