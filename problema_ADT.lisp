@@ -1,4 +1,4 @@
-;(load "utils.lisp")
+
 ;;-------------------------------Tipo ACCAO----------------------------------------
 (defun cria-accao (int array) 
 	(cons int array)
@@ -24,12 +24,10 @@
 	nil)
 )
 
-(defun tabuleiro-altura-coluna (tab int)
+(defun tabuleiro-altura-coluna (tab int)  ;QUALQUER COISA MAL
 	(loop for i from 17 downto 0 do
-		(if 
-		(equal(aref tab i int) t)
-		(tabuleiro-preenchido-p tab i int)
-		(return-from tabuleiro-altura-coluna (+ i 1))
+		(if (tabuleiro-preenchido-p tab i int)
+			(return-from tabuleiro-altura-coluna (1+ i))
 		)	
 	)
 	0
@@ -258,7 +256,6 @@
 )
 
 (defun accao-i0()
-;;lambda para lista ser "global" para o accao i0 e i1??
 	(let((lista (list)))
 		(loop for k from 0 to 9 do
 			(push (cria-accao k peca-i0) lista)
@@ -272,17 +269,6 @@
 	(let ((lista (list)))
 		(loop for k from 0 to 6 do
 			(push (cria-accao k peca-i1) lista)
-;			(setf linha (max (tabuleiro-altura-coluna (estado-tabuleiro state) i)
-;			(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1))
-;			(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 2))
-;			(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 3))))
-;				(if (and (not(tabuleiro-preenchido-p (estado-tabuleiro state) linha i))
-;					(not(tabuleiro-preenchido-p (estado-tabuleiro state) linha (+ i 1)))
-;					(not(tabuleiro-preenchido-p (estado-tabuleiro state) linha (+ i 2)))
-;					(not(tabuleiro-preenchido-p (estado-tabuleiro state) linha (+ i 3))))
-;					(push (cria-accao i '(T T T T)) lista)
-;					()
-;				)	
 		)
 	(nreverse lista)
 	)
@@ -291,16 +277,7 @@
 (defun accao-l0 ()
 	(let ((lista (list)))
 		(loop for k from 0 to 8 do
-
-;			(setf linha (max(tabuleiro-altura-coluna (estado-tabuleiro state) i)
-;				(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1))))
-;				(if (and (not(tabuleiro-preenchido-p (estado-tabuleiro state) linha i))
-;					(not(tabuleiro-preenchido-p (estado-tabuleiro state) linha (+ i 1)))
-;					(not(tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1) i))
-;					(not(tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 2) i)))
-					(push(cria-accao k peca-l0) lista)
-;					()
-;				)
+			(push(cria-accao k peca-l0) lista)
 		)
 	(nreverse lista)
 	)
@@ -309,76 +286,26 @@
 (defun accao-l1 ()
 	(let ((lista (list)))
 		(loop for k from 0 to 7 do
-			
-;			(setf linha_do_par (max(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1))
-;				(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 2))))
-;			
-;			(setf linha_pivot (tabuleiro-altura-coluna (estado-tabuleiro state) i))
-;
-;				(if (<= linha_do_par (+ linha_pivot 1))
-;					(if(and (not(tabuleiro-preenchido-p (estado-tabuleiro state)linha_pivot i)) 
-;					(not(tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha_pivot 1) i))
-;					(not(tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha_pivot 1) (+ i 1)))
-;					(not(tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha_pivot 1)(+ i 2))))
-					(push(cria-accao k peca-l1) lista)
-;					()
-;					)
-;					(if (and (not(tabuleiro-preenchido-p (estado-tabuleiro state) linha_do_par i))
-;						(not(tabuleiro-preenchido-p (estado-tabuleiro state) linha_do_par (+ i 1)))
-;						(not(tabuleiro-preenchido-p (estado-tabuleiro state) linha_do_par (+ i 2)))
-;						(not(tabuleiro-preenchido-p (estado-tabuleiro state) (- linha_do_par 1) i)))
-;						(push(cria-accao i '((T nil nil)(T T T))) lista)
-;						()
-;					)
-				)	
-		(nreverse lista)
+			(push(cria-accao k peca-l1) lista)
+		)	
+	(nreverse lista)
 	)
 )
 
 (defun accao-l2 ()
 	(let ((lista (list)))
-	(loop for k from 0 to 8 do
-;		(setf linha_pivot (tabuleiro-altura-coluna (estado-tabuleiro state) i))
-;		(setf linha_maybe (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))
-;
-;			(if (>=(- linha_pivot 2) linha-maybe)
-;				(if (and (not(tabuleiro-preenchido-p (estado-tabuleiro state) linha_pivot i))
-;					(not(tabuleiro-preenchido-p (estado-tabuleiro state) linha_pivot (+ i 1))
-;					(not(tabuleiro-preenchido-p (estado-tabuleiro state) (- linha_pivot 1)(+ i 1)))
-;					(not(tabuleiro-preenchido-p (estado-tabuleiro state) (- linha_pivot 2) (+ i 1)))))
-					(push(cria-accao k peca-l2) lista)
-;					()
-;				)
-;				(if (and (not(tabuleiro-preenchido-p (estado-tabuleiro state) linha_maybe (+ i 1)))
-;					(not(tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha_maybe 1)(+ i 1)))
-;					(not(tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha_maybe 2) i))
-;					(not(tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha_maybe 2) (+ i 1))))
-;					(push(cria-accao i '((nil T)(nil T)(T T))) lista)
-;					()
-;				)
-;			)	
+		(loop for k from 0 to 8 do
+			(push(cria-accao k peca-l2) lista)	
 		)
-	
 	(nreverse lista)
 	)
 )
 
 (defun accao-l3 ()
 	(let ((lista (list)))
-
-	(loop for k from 0 to 7 do
-;		(setf linha (max (tabuleiro-altura-coluna (estado-tabuleiro state) i)
-;			(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1))
-;			(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 2))))
-
-;		(if (and (not(tabuleiro-preenchido-p (estado-tabuleiro state) linha i))
-;			(not(tabuleiro-preenchido-p (estado-tabuleiro state) linha (+ i 1)))
-;			(not(tabuleiro-preenchido-p (estado-tabuleiro state) linha (+ i 2)))
-;			(not(tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1) (+ i 2))))
-				(push(cria-accao k peca-l3) lista)
-;			()
-;		)
-	)
+		(loop for k from 0 to 7 do
+			(push(cria-accao k peca-l3) lista)
+		)
 	(nreverse lista)
 	)
 ) 
@@ -471,17 +398,7 @@
 (defun accao-t0 ()
 	(let ((lista (list)))
 		(loop for k from 0 to 7 do
-			; A TESTAR LINHA SEGUINTE
-;			(setf linha (max (tabuleiro-altura-coluna (estado-tabuleiro state) i)
-;				(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1))
-;				(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 2))))
-;
-;			(if (and (not(tabuleiro-preenchido-p (estado-tabuleiro state) linha i))
-;				(not (tabuleiro-preenchido-p (estado-tabuleiro state) linha (+ i 1)))
-;				(not (tabuleiro-preenchido-p (estado-tabuleiro state) linha (+ i 2)))
-;				(not (tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1)
-;					(+ i 1))))
-				(push (cria-accao k peca-t0) lista)
+			(push (cria-accao k peca-t0) lista)
 		)
 	(nreverse lista)
 	)
@@ -490,14 +407,7 @@
 (defun accao-t1 ()
 	(let ((lista (list)))
 		(loop for k from 0 to 8 do
-;			(setf linha (max (tabuleiro-altura-coluna (estado-tabuleiro state) i)
-;				(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1))))
-;
-;			(if (and (not (tabuleiro-preenchido-p (estado-tabuleiro state) linha i))
-;				(not (tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1) i))
-;				(not (tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1) (+ i 1)))
-;				(not (tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 2) i)))
-				(push (cria-accao k peca-t1) lista)
+			(push (cria-accao k peca-t1) lista)
 		)
 	(nreverse lista)
 	)
@@ -506,19 +416,7 @@
 (defun accao-t2 ()
 	(let ((lista (list)))
 		(loop for k from 0 to 7 do
-			; A TESTAR LINHA SEGUINTE
-;			(setf linha (max (tabuleiro-altura-coluna (estado-tabuleiro state) i)
-;				(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1))
-;				(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 2))))
-;
-;			(if (and (not (tabuleiro-preenchido-p (estado-tabuleiro state) linha (+ i 1)))
-;				(not (tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1)
-;					i))
-;				(not (tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1)
-;					(+ i 1)))
-;				(not (tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1)
-;					(+ i 2))))
-				(push (cria-accao k peca-t2) lista)
+			(push (cria-accao k peca-t2) lista)
 		)
 	(nreverse lista)
 	)
@@ -527,14 +425,7 @@
 (defun accao-t3 ()
 	(let ((lista (list)))
 		(loop for k from 0 to 8 do
-;			(setf linha (max (tabuleiro-altura-coluna (estado-tabuleiro state) i)
-;				(tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1))))
-;
-;			(if (and (not (tabuleiro-preenchido-p (estado-tabuleiro state) linha (+ i 1)))
-;				(not (tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1) i))
-;				(not (tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 1) (+ i 1)))
-;				(not (tabuleiro-preenchido-p (estado-tabuleiro state) (+ linha 2) (+ i 1))))
-				(push (cria-accao k peca-t3) lista)
+			(push (cria-accao k peca-t3) lista)
 		)
 	(nreverse lista)
 	)
@@ -545,17 +436,110 @@
 
 (defun resultado(state action)
 	(let ((state_var (copia-estado state))
-		(peca_a_colocar (car(estado-pecas-por-colocar state_var))))
-		
+		(pontos nil)
+		(tab nil)
+		(tabuleiro nil)
+		(peca_a_colocar nil)
+
+		(minimo_pivot nil)
+		(altura_final_pivot nil))
+
+		(setf pontos (estado-pontos state_var))
+		(setf peca_a_colocar (car(estado-pecas-por-colocar state_var)))
+		(setf tab (estado-tabuleiro state_var))
+
+		(minimo_pivot (calcula-max-altura tab action))
+		(altura_final_pivot (calcula-onde-desenha tab minimo_pivot action))
+		(tabuleiro (desenha tab altura_final_pivot action))
+
+
 		(pop(estado-pecas-por-colocar state_var))
 		(push peca_a_colocar (estado-pecas-colocadas state_var))
-		;(coloca-peca (estado-tabuleiro state_var) action))
+
+
+		(if (tabuleiro-topo-preenchido-p tabuleiro)
+			()
+			(and (tabuleiro-remove-linha tabuleiro) (incf pontos (soma-pontos peca_a_colocar)))
+		)
+	(setf tab tabuleiro)	
+	state_var
 	)
 )
 
+(defun calcula-max-altura(tabu action)						;Calcula a altura da maior coluna onde a peca se podera apoiar 
+	(let ((largura (second (array-dimensions (accao-peca action))))
+		(inicio (accao-coluna action))
+		(maximo (tabuleiro-altura-coluna tabu (accao-coluna action))))
 
-;(defun coloca-peca (tabuleiro peca))
+		(loop for k from inicio to (+ inicio (1- largura)) do
+			(if (< maximo (tabuleiro-altura-coluna tabu k))
+				(setf maximo (tabuleiro-altura-coluna tabu k))
+			)
+		)
+	maximo
+	)
+)
 
+(defun calcula-onde-desenha(tabu min action)		;Calcula a posicao mais abaixo onde pode ser desenhada a peca
+	(let ((altura-inicial min)
+		(standby nil))
+
+		(loop for k from (+ altura-inicial 4) downto altura-inicial do
+			(if (posso-desenhar tabu action k)
+			 	
+			 		(if (posso-desenhar tabu action (- k 1))
+			 			(and (setf standby (- k 1)) (- k 1))
+			 			(setf standby k)
+			 		)
+			 	
+			)
+		)
+	standby
+	)
+)
+
+(defun posso-desenhar (tabu action linha)			;Devolve T caso seja possivel desenhar a accao recebida no tabuleiro, nil cc
+	(let ((coluna (accao-coluna action))
+		(nr-linhas (first(array-dimensions(accao-peca action))))
+		(nr-colunas (second(array-dimensions(accao-peca action))))
+		(i linha))
+
+	(when (< i 18) 
+		(loop for i from linha to (+ linha (- nr-linhas 1)) do
+			(loop for j from coluna to (+ coluna (- nr-colunas 1)) do
+				(if (tabuleiro-preenchido-p tabu i j)
+					(return-from posso-desenhar nil)
+				
+				)
+			)
+		)
+	)
+	)
+	t
+) 
+
+(defun desenha (state altura action)			;Preenche as quadriculas do tabuleiro conforme a configuracao da peca
+	(let ((coluna (accao-coluna action))
+		(tabu (estado-tabuleiro state))
+		(nr-linhas (first(array-dimensions(accao-peca action))))
+		(nr-colunas (second(array-dimensions(accao-peca action))))
+		(i altura)
+		(x 0)
+		(y 0))
+
+		(when (< i 18) 
+			(loop for i from altura to (+ altura (- nr-linhas 1)) do
+				(loop for j from coluna to (+ coluna (- nr-colunas 1)) do
+					(if (aref (accao-peca action) x y)
+						(and (tabuleiro-preenche! tabu i j) (1+ y))
+					)
+				)
+			(1+ x)
+			)
+		)
+	tabu
+	)
+)
 
 (defun qualidade (state)
 	(-(estado-pontos state))
@@ -581,10 +565,23 @@
 	)
 )
 
+(defun soma-pontos (peca)
+	(case peca 
+		(I 800)
+		(J 500)
+		(L 500)
+		(S 300)
+		(Z 300)
+		(O 300)
+		(t 300)
+	)
+)
 
+(load "utils.lisp")
 
 
 ;(load "problema_ADT.lisp")
 ;(setf l(cria-accao 3 peca-l2))
 ;(setf *a*(cria-tabuleiro))
 ;(setf *est1*(cria-estado 0 '(l) nil *a*))
+;(preenche-linha *a* 1 9 t)
