@@ -165,6 +165,10 @@
 )
 
 (defun copia-estado(state)
+	(let ((novo-tabuleiro nil)
+		(novo-pecas-colocadas nil)
+		(novo-pecas-por-colocar nil))
+
 	(setf novo-pecas-por-colocar (copy-list (estado-pecas-por-colocar state) ))
 	(setf novo-pecas-colocadas (copy-list (estado-pecas-colocadas state)))
 	(setf novo-tabuleiro (copia-tabuleiro (estado-tabuleiro state)))
@@ -174,6 +178,7 @@
 		:pecas-por-colocar novo-pecas-por-colocar
 		:pecas-colocadas novo-pecas-colocadas
 		:tabuleiro novo-tabuleiro) 
+	)
 )
 
 
@@ -444,9 +449,9 @@
 		(setf peca_a_colocar (car(estado-pecas-por-colocar state_var)))
 		(setf tab (estado-tabuleiro state_var))
 
-		(minimo_pivot (calcula-max-altura tab action))
-		(altura_final_pivot (calcula-onde-desenha tab minimo_pivot action))
-		(tabuleiro (desenha tab altura_final_pivot action))
+		(setf minimo_pivot (calcula-max-altura tab action))
+		(setf altura_final_pivot (calcula-onde-desenha tab minimo_pivot action))
+		(setf tabuleiro (desenha tab altura_final_pivot action))
 
 
 		(pop(estado-pecas-por-colocar state_var))
@@ -475,22 +480,14 @@
 	maximo
 	)
 )
-
 (defun calcula-onde-desenha(tabu min action)		;Calcula a posicao mais abaixo onde pode ser desenhada a peca
-	(let ((altura-inicial min)
-		(standby nil))
+	(let ((k min)
+		(nr-linhas (first(array-dimensions(accao-peca action)))))
 
-		(loop for k from (+ altura-inicial 4) downto altura-inicial do
-			(if (posso-desenhar tabu action k)
-			 	
-			 		(if (posso-desenhar tabu action (- k 1))
-			 			(and (setf standby (- k 1)) (- k 1))
-			 			(setf standby k)
-			 		)
-			 	
-			)
+		(loop while (and (> k 0) (posso-desenhar tabu action k)) do
+			(decf k 1)
 		)
-	standby
+		(incf k 1)
 	)
 )
 
@@ -498,14 +495,16 @@
 	(let ((coluna (accao-coluna action))
 		(nr-linhas (first(array-dimensions(accao-peca action))))
 		(nr-colunas (second(array-dimensions(accao-peca action))))
-		(i linha))
+		(x linha))
 
-	(when (< i 18) 
-		(loop for i from linha to (+ linha (- nr-linhas 1)) do
-			(loop for j from coluna to (+ coluna (- nr-colunas 1)) do
-				(if (tabuleiro-preenchido-p tabu i j)
-					(return-from posso-desenhar nil)
-				
+	(when (and(< x 18) (> x 0)) 
+		(loop for x from 0 to (- nr-linhas 1) do
+			(loop for y from 0 to (- nr-colunas 1) do
+
+				(if (aref (accao-peca action) x y)
+					(if (tabuleiro-preenchido-p tabu (+ linha x) (+ coluna y))
+						(return-from posso-desenhar nil)
+					)
 				)
 			)
 		)
@@ -523,14 +522,14 @@
 		(x 0)
 		(y 0))
 
+
 		(when (< i 18) 
-			(loop for i from altura to (+ altura (- nr-linhas 1)) do
-				(loop for j from coluna to (+ coluna (- nr-colunas 1)) do
+			(loop for x from 0 to (- nr-linhas 1) do
+				(loop for y from 0 to (- nr-colunas 1) do
 					(if (aref (accao-peca action) x y)
-						(and (tabuleiro-preenche! tabu i j) (1+ y))
+						(tabuleiro-preenche! tabu (+ i x)(+ coluna y))
 					)
 				)
-			(1+ x)
 			)
 		)
 	tabu
@@ -577,7 +576,8 @@
 
 
 ;(load "problema_ADT.lisp")
-;(setf l(cria-accao 3 peca-l2))
+;(setf l2(cria-accao 3 peca-l2))
+;(setf t2(cria-accao 1 peca-t2))
 ;(setf *a*(cria-tabuleiro))
 ;(setf *est1*(cria-estado 0 '(l) nil *a*))
 ;(preenche-linha *a* 1 9 t)
