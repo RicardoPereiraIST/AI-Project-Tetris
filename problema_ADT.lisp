@@ -58,11 +58,11 @@
 )	
 
 (defun tabuleiro-remove-linha!(tab num_linha)
-	(if (equal num_linha 0)
+	(if (equal num_linha 17)
 		;true
 		(progn
 			(copia-linha-abaixo tab num_linha)
-			;(preenche-linha tab num_linha 9 nil)
+			(preenche-linha tab num_linha 9 nil)
 		)
 		;false
 		(progn
@@ -147,7 +147,16 @@
 )
 
 (defun copia-linha-abaixo(tab num_linha)
+	(if (>= (+ num_linha 1) 18)
+		(return-from copia-linha-abaixo nil)
+		(progn
+			(loop for num_coluna from 0 to 9 do
+				(setf (aref tab  num_linha num_coluna)
+					(aref tab (+ num_linha 1) num_coluna))
+			)
+		)
 
+	)
 )
 ;-------------------------------------------------Tipo ESTADO
 (defstruct estado
@@ -574,15 +583,3 @@
 
 (load "utils.lisp")
 
-
-;(load "problema_ADT.lisp")
-;(setf l2(cria-accao 3 peca-l2))
-;(setf t2(cria-accao 1 peca-t2))
-;(setf *a*(cria-tabuleiro))
-;(setf *est1*(cria-estado 0 '(l) nil *a*))
-;(preenche-linha *a* 1 9 t)
-
-(setf Tab (cria-tabuleiro))
-(preenche-linha Tab 2 9 T)
-(setf (aref Tab 0 0) T)
-(setf (aref Tab 3 3) T)
