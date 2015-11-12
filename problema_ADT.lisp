@@ -24,7 +24,7 @@
 	nil)
 )
 
-(defun tabuleiro-altura-coluna (tab int)  ;QUALQUER COISA MAL
+(defun tabuleiro-altura-coluna (tab int) 
 	(loop for i from 17 downto 0 do
 		(if (tabuleiro-preenchido-p tab i int)
 			(return-from tabuleiro-altura-coluna (1+ i))
@@ -40,13 +40,14 @@
 		(return-from tabuleiro-linha-completa nil)
 		)
 	)
+	t
 )	
 
 (defun tabuleiro-linha-completa-p (tab int)
 	(loop for j from 0 to 9 do
 		(if
 		(equal(aref tab int j) nil)
-		(return-from tabuleiro-linha-completa-p nil)   ;PROBLEMA AQUI
+		(return-from tabuleiro-linha-completa-p nil)  
 		)
 	)
 	t
@@ -59,12 +60,10 @@
 
 (defun tabuleiro-remove-linha!(tab num_linha)
 	(if (equal num_linha 17)
-		;true
 		(progn
 			(copia-linha-abaixo tab num_linha)
 			(preenche-linha tab num_linha 9 nil)
 		)
-		;false
 		(progn
 			(copia-linha-abaixo tab num_linha)
 			(tabuleiro-remove-linha! tab (+ num_linha 1))	
@@ -75,7 +74,6 @@
 
 
 (defun tabuleiro-topo-preenchido-p(tab)
-	;mudar para recursivo
 	
 	(loop for num_coluna from 0 to 9 do
 		(if (equal (aref tab 17 num_coluna) t)
@@ -160,9 +158,9 @@
 )
 ;-------------------------------------------------Tipo ESTADO
 (defstruct estado
-	pontos ;;optional
+	pontos
 	pecas-por-colocar
-	pecas-colocadas ;;optional
+	pecas-colocadas
 	tabuleiro)
 
 (defun cria-estado (points pieces_to_place pieces_placed board)
@@ -226,7 +224,7 @@
 
 (defun accoes(state)
 	(case (car(estado-pecas-por-colocar state)) 
-		(I (accao-i)) ;ATENCAO UPPER CASE
+		(I (accao-i))
 		(L (accao-l))
 		(J (accao-j))
 		(O (accao-o))
@@ -446,32 +444,42 @@
 
 (defun resultado(state action)
 	(let ((state_var (copia-estado state))
-		(pontos nil)
-		(tab nil)
-		(tabuleiro nil)
+		(minimo_pivot 0)
+		(altura_final_pivot 0)
 		(peca_a_colocar nil)
+		(tab nil)
+		(altura_peca 0)
+		(count 0))
 
-		(minimo_pivot nil)
-		(altura_final_pivot nil))
-
-		(setf pontos (estado-pontos state_var))
 		(setf peca_a_colocar (car(estado-pecas-por-colocar state_var)))
+		(setf altura_peca (first(array-dimensions (accao-peca action))))
 		(setf tab (estado-tabuleiro state_var))
 
+
 		(setf minimo_pivot (calcula-max-altura tab action))
+
 		(setf altura_final_pivot (calcula-onde-desenha tab minimo_pivot action))
-		(setf tabuleiro (desenha tab altura_final_pivot action))
+
+		(setf tab (desenha state_var altura_final_pivot action))
 
 
 		(pop(estado-pecas-por-colocar state_var))
 		(push peca_a_colocar (estado-pecas-colocadas state_var))
 
 
-		(if (tabuleiro-topo-preenchido-p tabuleiro)
+		(if (tabuleiro-topo-preenchido-p tab)
 			()
-			(and (tabuleiro-remove-linha tabuleiro) (incf pontos (soma-pontos peca_a_colocar)))
+			(loop for k from altura_final_pivot to (+ altura_peca altura_final_pivot) do
+				(if (tabuleiro-linha-completa tab k) 
+					(progn
+					 	(tabuleiro-remove-linha! tab k)
+					 	(incf count 1)
+					 	(decf k 1)
+					)
+				)
+			)
 		)
-	(setf tab tabuleiro)	
+	(incf  (estado-pontos state_var) (soma-pontos count))
 	state_var
 	)
 )
@@ -491,10 +499,9 @@
 )
 (defun calcula-onde-desenha(tabu min action)		;Calcula a posicao mais abaixo onde pode ser desenhada a peca
 	(let ((k min)
-		;(nr-linhas (first(array-dimensions(accao-peca action)))))
 		)
 
-		(loop while (and (> k 0) (posso-desenhar tabu action k)) do
+		(loop while (and (>= k 0) (posso-desenhar tabu action k)) do
 			(decf k 1)
 		)
 		(incf k 1)
@@ -507,7 +514,7 @@
 		(nr-colunas (second(array-dimensions(accao-peca action))))
 		(x linha))
 
-	(when (and(< x 18) (> x 0)) 
+	(when (and(< x 18) (>= x 0)) 
 		(loop for x from 0 to (- nr-linhas 1) do
 			(loop for y from 0 to (- nr-colunas 1) do
 
@@ -536,7 +543,7 @@
 			(loop for x from 0 to (- nr-linhas 1) do
 				(loop for y from 0 to (- nr-colunas 1) do
 					(if (aref (accao-peca action) x y)
-						(tabuleiro-preenche! tabu (+ i x)(+ coluna y))
+						(tabuleiro-preenche! tabu (+ i x) (+ coluna y))
 					)
 				)
 			)
@@ -569,17 +576,117 @@
 	)
 )
 
-(defun soma-pontos (peca)
-	(case peca 
-		(I 800)
-		(J 500)
-		(L 500)
-		(S 300)
-		(Z 300)
-		(O 300)
-		(t 300)
+(defun soma-pontos (nr_linhas_removidas)
+	(cond 
+		((eq nr_linhas_removidas 0) 0)
+		((eq nr_linhas_removidas 1) 100)
+		((eq nr_linhas_removidas 2) 300)
+		((eq nr_linhas_removidas 3) 500)
+		((eq nr_linhas_removidas 4) 800)	 
+	)
+)
+
+
+;------------------------------------------------2ª Entrega--------------------------------------------
+
+;(load "problema_ADT.lisp")
+;(setf l2(cria-accao 3 peca-l2))
+;(setf t2(cria-accao 1 peca-t2))
+;(setf *a*(cria-tabuleiro))
+;(setf *est1*(cria-estado 0 '(l) nil *a*))
+;(calcula-max-altura *a* l2)
+;(calcula-onde-desenha *a* 3 l2)
+
+;(defstruct problema 
+;	estado-inicial
+;	solucao
+;	accoes
+;	resultado
+;	custo-caminho)
+
+;(defstruct node
+;	estado
+;	parent
+;	accao
+;	cost
+;	depth)
+
+;(defstruct estado
+;	pontos 
+;	pecas-por-colocar
+;	pecas-colocadas
+;	tabuleiro)
+
+(defun procura-pp(prob)  ;Limite depth 2
+	(depth-limited-search prob 2)  
+)
+
+(defun cria-node (prob parent action)
+	(make-node :estado (resultado (estado-inicial prob) action)
+				:parent parent
+				:accao action
+				:cost (node-cost parent)  ; + estimativa de custo
+				:depth (+ (node-depth parent) 1))
+)
+
+(defun child-node (prob parent action)
+	(cria-node prob parent action)
+)
+
+(defun depth-limited-search (prob limit)
+	(recursive-dls (cria-node (estado-inicial prob) nil) prob limit)	
+)
+
+
+(defun recursive-dls(node prob limit)
+
+	(let ((fronteira nil))
+		
+
+	(if (solucao (node-estado node))
+		(return-from procura-pp node)
+		(push node fronteira)
+	)
+
+	(loop while (accoes (node-estado node)) do
+
+		(node_filho (child-node prob node (pop accoes)))
+		(result (recursive-dls node_filho prob)) 
+	)		
+	)
+)
+
+(defun h1 (state)  		;Aggregate height
+	(let ((count 0))
+
+		(loop for i from 0 to 9 do
+			(incf count (tabuleiro-altura-coluna (estado-tabuleiro state) i))	
+		)
+	count)
+)
+
+;heuristic complete lines??
+
+(defun h3 (state) 		;buracos cobertos do lado de cima
+	(let ((count 0))
+
+		(loop for i from 0 to 9 do
+			(loop for j from (- (tabuleiro-altura-coluna (estado-tabuleiro state) i) 1) downto 0 do
+				(if (tabuleiro-preenchido-p (estado-tabuleiro state) i j)
+					()
+					(incf count 1)
+				)
+			)
+		)
+	)
+)
+
+(defun h4 (state)  		;sum dos modulos das diferencas de alturas
+	(let ((count 0))
+		(loop for i from 0 to 8 do
+			(incf count (abs(- (tabuleiro-altura-coluna (estado-tabuleiro state) i) (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))))
+		)
 	)
 )
 
 (load "utils.lisp")
-
