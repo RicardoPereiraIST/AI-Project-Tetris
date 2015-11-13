@@ -215,11 +215,11 @@
 	resultado
 	custo-caminho)
 
-(defun solucao (state)
+(defun solucao (state)  ;deveria usar estado-final-p???
 	(if (and (not (tabuleiro-topo-preenchido-p (estado-tabuleiro state)))
 		(equal(estado-pecas-por-colocar state) nil))
-		t
-		nil)
+	t
+	nil)
 )
 
 (defun accoes(state)
@@ -621,6 +621,10 @@
 	(depth-limited-search prob 2)  
 )
 
+(defun depth-limited-search (prob limit) ;S
+	(recursive-dls (cria-node prob nil nil) prob limit)	
+)
+
 (defun cria-node (prob parent action)
 	(make-node :estado (resultado (estado-inicial prob) action)
 				:parent parent
@@ -633,9 +637,7 @@
 	(cria-node prob parent action)
 )
 
-(defun depth-limited-search (prob limit)
-	(recursive-dls (cria-node (estado-inicial prob) nil) prob limit)	
-)
+
 
 
 (defun recursive-dls(node prob limit)
@@ -657,34 +659,60 @@
 )
 
 (defun h1 (state)  		;Aggregate height
-	(let ((count 0))
+	(let ((aggregate_height 0))
 
 		(loop for i from 0 to 9 do
-			(incf count (tabuleiro-altura-coluna (estado-tabuleiro state) i))	
+			(incf aggregate_height (tabuleiro-altura-coluna (estado-tabuleiro state) i))	
 		)
-	count)
+	aggregate_height)
 )
 
 ;heuristic complete lines??
 
 (defun h3 (state) 		;buracos cobertos do lado de cima
-	(let ((count 0))
+	(let ((holes 0))
 
 		(loop for i from 0 to 9 do
 			(loop for j from (- (tabuleiro-altura-coluna (estado-tabuleiro state) i) 1) downto 0 do
 				(if (tabuleiro-preenchido-p (estado-tabuleiro state) i j)
 					()
-					(incf count 1)
+					(incf holes 1)
 				)
 			)
 		)
+	holes
 	)
 )
 
-(defun h4 (state)  		;sum dos modulos das diferencas de alturas
+(defun h4 (state)  		;sum dos modulos das diferencas de alturas aka slopes
 	(let ((count 0))
 		(loop for i from 0 to 8 do
 			(incf count (abs(- (tabuleiro-altura-coluna (estado-tabuleiro state) i) (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))))
+		)
+	count
+	)
+)
+
+(defun h5 (state)   	
+	(let ((pecas 0))
+		(loop for i from 0 to 9 do
+			(loop for j from 0 to (- (tabuleiro-altura-coluna (estado-tabuleiro state) i) 1) do
+				(if (tabuleiro-preenchido-p (estado-tabuleiro state) i j)
+					(incf pecas 1)
+				)
+			)
+		)
+	pecas
+	)
+)
+
+(defun h6 (state)  		;higher slope
+	(let ((maior 0))
+		(loop for i from 0 to 9 do
+			(if (> (abs(- (tabuleiro-altura-coluna (estado-tabuleiro state) i) (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))) maior)
+				(setf maior (abs(- (tabuleiro-altura-coluna (estado-tabuleiro state) i) (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))))
+				()
+			)
 		)
 	)
 )
