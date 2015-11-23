@@ -1,4 +1,5 @@
 
+
 ;;-------------------------------Tipo ACCAO----------------------------------------
 (defun cria-accao (int array) 
 	(cons int array)
@@ -156,7 +157,7 @@
 
 	)
 )
-;-------------------------------------------------Tipo ESTADO
+;-------------------------------------------------Tipo ESTADO-------------------------------
 (defstruct estado
 	pontos
 	pecas-por-colocar
@@ -215,7 +216,7 @@
 	resultado
 	custo-caminho)
 
-(defun solucao (state)  ;deveria usar estado-final-p???
+(defun solucao (state)              
 	(if (and (not (tabuleiro-topo-preenchido-p (estado-tabuleiro state)))
 		(equal(estado-pecas-por-colocar state) nil))
 	t
@@ -223,14 +224,17 @@
 )
 
 (defun accoes(state)
-	(case (car(estado-pecas-por-colocar state)) 
-		(I (accao-i))
-		(L (accao-l))
-		(J (accao-j))
-		(O (accao-o))
-		(S (accao-s))
-		(Z (accao-z))
-		(t (accao-t))
+	(if (estado-final-p state)
+		nil
+		(case (car(estado-pecas-por-colocar state)) 
+			(I (accao-i))
+			(L (accao-l))
+			(J (accao-j))
+			(O (accao-o))
+			(S (accao-s))
+			(Z (accao-z))
+			(t (accao-t))
+		)
 	)
 ) 	
 
@@ -587,7 +591,7 @@
 )
 
 
-;------------------------------------------------2ª Entrega--------------------------------------------
+;------------------------------------------------2 Entrega--------------------------------------------
 
 ;(load "problema_ADT.lisp")
 ;(setf l2(cria-accao 3 peca-l2))
@@ -616,48 +620,195 @@
 ;	pecas-por-colocar
 ;	pecas-colocadas
 ;	tabuleiro)
+;----------------------------------NODE------------------------------------
+(defstruct node
+  ;Node for generic search.  A node contains a state, a domain-specific
+  ;representation of a point in the search space.  A node also contains 
+  ;bookkeeping information such as the cost so far (g-cost) and estimated cost 
+  ;to go (h-cost).
+  (state (required))        ; a state in the domain
+  (parent nil)              ; the parent node of this node
+  (action nil)              ; the domain action leading to state
+  (depth 0)                 ; depth of node in tree (root = 0)
+  (g-cost 0)                ; path cost from root to node
+  (h-cost 0)                ; estimated distance from state to goal
+  (f-cost 0)                ; g-cost + h-cost
+  )
 
-(defun procura-pp(prob)  ;Limite depth 2
-	(depth-limited-search prob 2)  
+(defun create-start-node (problem)
+  ;Make the starting node, corresponding to the problem's initial state.
+  (let ((h (h-cost problem (problem-initial-state problem))))
+    (make-node :state (problem-initial-state problem) 
+    	:h-cost h 
+    	:f-cost h)
+   )
 )
 
-(defun depth-limited-search (prob limit) ;S
-	(recursive-dls (cria-node prob nil nil) prob limit)	
+(defun h-cost (problem state)
+	(ignore-value problem)
+	(ignore-value state)
+	0
+)
+;return heuristic-cost;
+
+;---------------------------QUEUE---------------------------------
+(defstruct q
+  (key #'identity)
+  (last nil)
+  (elements nil))
+
+(defun make-empty-queue () (make-q))
+
+(defun empty-queue? (q)
+  (= (length (q-elements q)) 0))
+
+(defun make-initial-queue (problem queuing-fn)
+  (let ((q (make-empty-queue)))
+    (funcall queuing-fn q (list (create-start-node problem)))
+    q))
+
+(defun enqueue-at-front (q items)
+  ;Add a list of items to the front of the queue.
+  (setf (q-elements q) (nconc items (q-elements q))))
+
+
+(defun enqueue-by-priority (q items key)
+  ;Insert the items by priority according to the key function.
+  ; First make sure the queue is in a consistent state
+  (setf items (reverse items))       ;Para criterio de desempate queremos a que foi expandida depois
+  (setf (q-key q) key)
+  (when (null (q-elements q))
+    (setf (q-elements q) (make-heap)))
+  ; Now insert the items
+  (loop while items do    ;ERA UM FOR EACH, PODE TER MUDADO ALGUMA COISA, NAO SEI COMO E' FEITA A INSERCAO
+  		(let ((item (pop items)))
+       		(heap-insert (q-elements q) item key))))
+
+
+(defun remove-front (q)
+  (if (listp (q-elements q))
+      (pop (q-elements q))
+    (heap-extract-min (q-elements q) (q-key q))))
+
+;------------------------PROCURAS-------------------------------
+
+(defun goal-test(problem node)  
+	(funcall (problema-solucao problem) (node-state node))
 )
 
-(defun cria-node (prob parent action)
-	(make-node :estado (resultado (estado-inicial prob) action)
-				:parent parent
-				:accao action
-				:cost (node-cost parent)  ; + estimativa de custo
-				:depth (+ (node-depth parent) 1))
-)
+(defun expand (node problem)  ;Devolve LIFO
+  ;Generate a list of all the nodes that can be reached from a node.
+    (let ((nodes nil)
+    	(lista_accoes (funcall (problema-accoes problem) (node-state node))))
+	    (loop while lista_accoes do
+	    	(let ((this_action (pop lista_accoes))
+	    		(new_state nil)
+	    		(g 0)
+	    		(h 0))
 
-(defun child-node (prob parent action)
-	(cria-node prob parent action)
-)
-
-
-
-
-(defun recursive-dls(node prob limit)
-
-	(let ((fronteira nil))
-		
-
-	(if (solucao (node-estado node))
-		(return-from procura-pp node)
-		(push node fronteira)
+	    		(setf new_state (resultado (node-state node) this_action))
+		    	(setf g (+ (node-g-cost node) (funcall (problema-custo-caminho problem) (node-state node))))  ;custo-caminho do node filho ou do pai? 
+		    	(setf h (h-cost problem (node-state node)))										                     ;Faco a diferenca entre os dois?
+		    	
+	    		(push (make-node :action this_action 
+			    				:state new_state
+			    				:parent node
+			    				:depth (1+ (node-depth node))
+			    				:g-cost g
+			    				:h-cost h
+			    				:f-cost (max (node-f-cost node) (+ g h)))
+			    nodes)	
+			)
+		)
+	nodes
 	)
-
-	(loop while (accoes (node-estado node)) do
-
-		(node_filho (child-node prob node (pop accoes)))
-		(result (recursive-dls node_filho prob)) 
-	)		
-	)
 )
 
+
+(defun solution-actions (node &optional (actions-so-far nil))  ;BACKTRACKING FUNCTION
+  ;Return a list of actions that will lead to the node's state.
+  (cond ((null node) actions-so-far)
+	((null (node-parent node)) actions-so-far)
+	(t (solution-actions (node-parent node)
+			     (cons (node-action node) actions-so-far)))))
+
+
+(defun general-search (problem queuing-fn)
+  (let ((nodes (make-initial-queue problem queuing-fn)) node)
+    (loop (if (empty-queue? nodes) (RETURN nil))
+	  (setq node (remove-front nodes))
+	  (if (goal-test problem (node-state node)) (RETURN node))
+	  (funcall queuing-fn nodes (expand node problem))))                        ;FALTA DEVOLVER A LISTA DAS ACCOES QUE LEVARAM AO ESTADO
+  )
+
+
+;-------------------------------PROCURA-PP-------------------------------------
+
+(defun procura-pp (problem)
+	(general-search problem #'enqueue-at-front)
+)
+
+;-----------------------------PROCURA-A-----------------------------------------
+
+(defun procura-A*(problem heuristic)
+	(best-first-search problem heuristic)
+)
+
+(defun best-first-search (problem eval-fn)
+  ;Search the nodes with the best evaluation first.
+  (general-search problem #'(lambda (old-q nodes) 
+			      (enqueue-by-priority old-q nodes eval-fn))))
+
+
+;-------------------------------HEAPS--------------------------------------------
+
+(defun heap-val (heap i key) (declare (fixnum i)) (funcall key (aref heap i)))
+(defun heap-parent (i) (declare (fixnum i)) (floor (- i 1) 2))
+(defun heap-left (i) (declare (fixnum i)) (the fixnum (+ 1 i i)))
+(defun heap-right (i) (declare (fixnum i)) (the fixnum (+ 2 i i)))
+
+(defun heapify (heap i key)
+  ;Assume that the children of i are heaps, but that heap[i] may be 
+  ;larger than its children.  If it is, move heap[i] down where it belongs.
+  (let ((l (heap-left i))
+	(r (heap-right i))
+	(N (- (length heap) 1))
+	smallest)
+    (setf smallest (if (and (<= l N) (<= (heap-val heap l key)
+					 (heap-val heap i key)))
+		       l i))
+    (if (and (<= r N) (<= (heap-val heap r key) (heap-val heap smallest key)))
+	(setf smallest r))
+    (when (/= smallest i)
+      (rotatef (aref heap i) (aref heap smallest))
+      (heapify heap smallest key))))
+
+(defun heap-extract-min (heap key)
+  ;Pop the best (lowest valued) item off the heap.
+  (let ((min (aref heap 0)))
+    (setf (aref heap 0) (aref heap (- (length heap) 1)))
+    (decf (fill-pointer heap))
+    (heapify heap 0 key)
+    min))
+
+(defun heap-insert (heap item key)
+  ;Put an item into a heap.
+  ; Note that ITEM is the value to be inserted, and KEY is a function
+  ; that extracts the numeric value from the item.
+  (vector-push-extend nil heap)
+  (let ((i (- (length heap) 1))
+	(val (funcall key item)))
+    (loop while (and (> i 0) (>= (heap-val heap (heap-parent i) key) val)) do 
+    	(setf (aref heap i) (aref heap (heap-parent i))
+	       i (heap-parent i)))
+    (setf (aref heap i) item)))
+
+(defun make-heap (&optional (size 100))
+  (make-array size :fill-pointer 0 :adjustable t))
+
+
+
+;--------------------------------------------Heuristicas-----------------------------------
 (defun h1 (state)  		;Aggregate height
 	(let ((aggregate_height 0))
 
@@ -716,5 +867,4 @@
 		)
 	)
 )
-
-(load "utils.lisp")
+(load "utils.fas")
