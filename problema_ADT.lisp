@@ -637,8 +637,8 @@
 
 (defun create-start-node (problem)
   ;Make the starting node, corresponding to the problem's initial state.
-  (let ((h (h-cost problem (problem-initial-state problem))))
-    (make-node :state (problem-initial-state problem) 
+  (let ((h (h-cost problem (problema-estado-inicial problem))))
+    (make-node :state (problema-estado-inicial problem) 
     	:h-cost h 
     	:f-cost h)
    )
@@ -737,7 +737,7 @@
   (let ((nodes (make-initial-queue problem queuing-fn)) node)
     (loop (if (empty-queue? nodes) (RETURN nil))
 	  (setq node (remove-front nodes))
-	  (if (goal-test problem (node-state node)) (RETURN node))
+	  (if (goal-test problem node) (RETURN node))
 	  (funcall queuing-fn nodes (expand node problem))))                        ;FALTA DEVOLVER A LISTA DAS ACCOES QUE LEVARAM AO ESTADO
   )
 
@@ -745,19 +745,19 @@
 ;-------------------------------PROCURA-PP-------------------------------------
 
 (defun procura-pp (problem)
-	(general-search problem #'enqueue-at-front)
+	(solution-actions (general-search problem #'enqueue-at-front))   ;general-search returns final node or nil 
 )
 
 ;-----------------------------PROCURA-A-----------------------------------------
 
 (defun procura-A*(problem heuristic)
-	(best-first-search problem heuristic)
+	(solution-actions (best-first-search problem heuristic))
 )
 
 (defun best-first-search (problem eval-fn)
   ;Search the nodes with the best evaluation first.
-  (general-search problem #'(lambda (old-q nodes) 
-			      (enqueue-by-priority old-q nodes eval-fn))))
+  (solution-actions (general-search problem #'(lambda (old-q nodes) 
+			      (enqueue-by-priority old-q nodes eval-fn)))))
 
 
 ;-------------------------------HEAPS--------------------------------------------
@@ -867,4 +867,4 @@
 		)
 	)
 )
-(load "utils.fas")
+(load "utils.lisp")
