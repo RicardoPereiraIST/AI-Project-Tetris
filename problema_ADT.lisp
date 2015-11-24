@@ -18,11 +18,13 @@
 	(make-array (list 18 10))
 )
 
-(defun tabuleiro-preenchido-p (tab int1 int2)
-	(if 
-	(equal(aref tab int1 int2) t)
-	t
-	nil)
+(defun tabuleiro-preenchido-p (tab int1 int2)     ;Alterei para poder preencher parcialmente, quando uma peca fica metade dentro e metade fora do tab
+	(if (or (>= int1 (first (array-dimensions tab))) (>= int2 (second (array-dimensions tab))))
+		nil
+		(if (equal(aref tab int1 int2) t)
+		t
+		nil)
+	)
 )
 
 (defun tabuleiro-altura-coluna (tab int) 
@@ -594,7 +596,7 @@
 ;------------------------------------------------2 Entrega--------------------------------------------
 
 ;(load "problema_ADT.lisp")
-;(setf l2(cria-accao 3 peca-l2))
+;(setf l0(cria-accao 3 peca-l0))
 ;(setf t2(cria-accao 1 peca-t2))
 ;(setf *a*(cria-tabuleiro))
 ;(setf *est1*(cria-estado 0 '(l) nil *a*))
@@ -644,6 +646,10 @@
    )
 )
 
+(defun g-cost (problem state)
+	(funcall (problema-custo-caminho problem) state)
+)
+
 (defun h-cost (problem state)
 	(ignore-value problem)
 	(ignore-value state)
@@ -651,6 +657,9 @@
 )
 ;return heuristic-cost;
 
+(defun f-cost (problem node)
+	(+ (funcall (g-cost problem (node-state node))) (funcall (h-cost problem (node-state node)))) 
+)
 ;---------------------------QUEUE---------------------------------
 (defstruct q
   (key #'identity)
@@ -704,11 +713,13 @@
 	    	(let ((this_action (pop lista_accoes))
 	    		(new_state nil)
 	    		(g 0)
-	    		(h 0))
+	    		(h 0)
+	    		(f 0))
 
-	    		(setf new_state (resultado (node-state node) this_action))
-		    	(setf g (+ (node-g-cost node) (funcall (problema-custo-caminho problem) (node-state node))))  ;custo-caminho do node filho ou do pai? 
-		    	(setf h (h-cost problem (node-state node)))										                     ;Faco a diferenca entre os dois?
+	    		(setf new_state (funcall (problema-resultado problem) (node-state node) this_action))
+		    	(setf g (g-cost problem new_state))
+		    	(setf h (h-cost problem new_state))		
+		    	(setf f (+ g h))								                     
 		    	
 	    		(push (make-node :action this_action 
 			    				:state new_state
@@ -716,7 +727,7 @@
 			    				:depth (1+ (node-depth node))
 			    				:g-cost g
 			    				:h-cost h
-			    				:f-cost (max (node-f-cost node) (+ g h)))
+			    				:f-cost f)
 			    nodes)	
 			)
 		)
@@ -738,7 +749,7 @@
     (loop (if (empty-queue? nodes) (RETURN nil))
 	  (setq node (remove-front nodes))
 	  (if (goal-test problem node) (RETURN node))
-	  (funcall queuing-fn nodes (expand node problem))))                        ;FALTA DEVOLVER A LISTA DAS ACCOES QUE LEVARAM AO ESTADO
+	  (funcall queuing-fn nodes (expand node problem))))                        
   )
 
 
@@ -750,14 +761,15 @@
 
 ;-----------------------------PROCURA-A-----------------------------------------
 
-(defun procura-A*(problem heuristic)
-	(solution-actions (best-first-search problem heuristic))
+(defun procura-A*(problem heuristic)           ;perceber porque o node
+	
+	(solution-actions (best-first-search problem  #'(lambda(node) (+ (funcall (problema-custo-caminho problem) (node-state node)) (funcall heuristic (node-state node))))))
 )
 
 (defun best-first-search (problem eval-fn)
   ;Search the nodes with the best evaluation first.
-  (solution-actions (general-search problem #'(lambda (old-q nodes) 
-			      (enqueue-by-priority old-q nodes eval-fn)))))
+  (general-search problem #'(lambda (old-q nodes) 
+			      (enqueue-by-priority old-q nodes eval-fn))))
 
 
 ;-------------------------------HEAPS--------------------------------------------
@@ -867,4 +879,5 @@
 		)
 	)
 )
+
 (load "utils.lisp")
