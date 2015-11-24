@@ -211,10 +211,10 @@
 ;----------------------------------------Tipo PROBLEMA---------------------------------------------------
 (defstruct problema 
 	estado-inicial
-	solucao
-	accoes
-	resultado
-	custo-caminho)
+	solucao ; funcao
+	accoes 	;funcao
+	resultado ; funcao
+	custo-caminho ;funcao)
 
 (defun solucao (state)              
 	(if (and (not (tabuleiro-topo-preenchido-p (estado-tabuleiro state)))
@@ -808,8 +808,31 @@
 
 
 
+; ------------------------------ Procura Best
+(defun procura-best (array pecas-por-colocar)
+	;procura-best : array x lista pecas -> accoes
+	;Devolve sequencia de accoes que levam a maximiazar pontos
+
+	(let state (make-estado
+		:pontos 0
+		:pecas-por-colocar pecas-por-colocar
+		:pecas-colocadas nil
+		:tabuleiro (array->tabuleiro array)))
+
+	(let problem (make-problema
+					:estado-inicial state))
+
+	(best-first-search problem fn-heuristica)
+)
+
+
 ;--------------------------------------------Heuristicas-----------------------------------
+
+
+
+;Soma das alturas de todas as colunas
 (defun h1 (state)  		;Aggregate height
+	;
 	(let ((aggregate_height 0))
 
 		(loop for i from 0 to 9 do
@@ -819,7 +842,7 @@
 )
 
 ;heuristic complete lines??
-
+; nr de buracos no tabuleiro
 (defun h3 (state) 		;buracos cobertos do lado de cima
 	(let ((holes 0))
 
@@ -835,6 +858,7 @@
 	)
 )
 
+
 (defun h4 (state)  		;sum dos modulos das diferencas de alturas aka slopes
 	(let ((count 0))
 		(loop for i from 0 to 8 do
@@ -844,6 +868,7 @@
 	)
 )
 
+;nr de pecas colocadas
 (defun h5 (state)   	
 	(let ((pecas 0))
 		(loop for i from 0 to 9 do
@@ -857,6 +882,7 @@
 	)
 )
 
+;Devolve maior slope
 (defun h6 (state)  		;higher slope
 	(let ((maior 0))
 		(loop for i from 0 to 9 do
@@ -867,4 +893,7 @@
 		)
 	)
 )
+
+
+
 (load "utils.fas")
