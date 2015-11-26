@@ -911,46 +911,68 @@
 ;	tabuleiro)
 
 ;----------------------------Alg Genetico-----------
-(defun genetic-alg (problem heur_list population) 
-	; 1 aplicar funcao de fitness a lista de constantes
-	(defstruct candidato
+(defstruct candidato
 		constantes
 		racio
-	)
+)
 
-	(setf calulate_ppl '()) 
-	(loop for const_list in calculated_ppl do
-		(setf temp (make-candidato 
-						:constantes const_list))
-		;chamar fit fun
-		(setf (candidato-racio temp) (fitness-fun problem '(h1 h3 h4 h5 h6) population))
-		(append calculated_ppl 'temp)
-	)
+;VAR GLOBAIS 
+; heur_list
+; const_strc
 
+(setf heur_list '(h1 h3 h4 h5 h6))
+
+(setf const_struc nil)
+
+(defun genetic-alg (problem heur_list population first-time) 
+	; 1 aplicar funcao de fitness a lista de constantes
+	
+	(cond (eq first-time T)
+		(setf calculated_ppl population)
+		(T (setf calulate_ppl '()) 
+			(loop for const_list in calculated_ppl do
+				(setf const_struc (make-candidato 
+								:constantes const_list))
+				;chamar fit fun
+				(setf (candidato-racio const_struc) (fitness-fun problem))
+				(append calculated_ppl 'temp)
+			)
+
+		)
+	)
 	; 2 Fazer CrossOver Ideia de escolher os n melhores tais que os 
 	; CrossOver entre os n melhores geram o mesmo numero de 
 	; filhos que os elementos da população actual 
-	; Falta mixing rate 
+	; Falta mixing rate 0.7 0.3
 
 	(setf select_ppl '())
-	(loop for i from 0 to (/ (list-length population) 2) do
+	(loop for i from 0 to (floor (/ (list-length population) 2)) do
 		(append select_ppl '(nth (random (list-length population)) population))
 	)
 
 	;ordena pelo racio
-	(sort new_ppl (lambda(struc1 struc2) (> (candidato-racio struc1) (candidato-racio struc2))))
+	(sort select_ppl (lambda(struc1 struc2) (> (candidato-racio struc1) (candidato-racio struc2))))
 
 	; Escolher melhores
-	
+	; Lista que vai receber a nova populacao
+	(setf new_ppl '())
+	; Lista de elementos retirados da populacao dos pais	
+	(setf poped_const '())
+	(loop while (< (list-length new_ppl) 
+				(floor (/ (list-length population) 2)))
+		
+
+
+	)
 
 	; 3 Mutacao
-	; Necessaria uma prob de mutação
+	; Necessaria uma prob de mutação 0.05
 
 
 
 
 	
-	(funcall genetic-alg problem heur_list new_ppl)
+	(funcall genetic-alg problem heur_list new_ppl nil)
 )
 
 ; Função de fitness --> classifica cada proposta de solucao (calcula racio de pontos/max pontos)
@@ -961,33 +983,59 @@
 ; estrutura passada por referencia (assim como todos os seus elementos)
 ; lista passada por valor
 
-;VAR GLOBAIS 
-; heur_list
-; const_strc
 
-(setf heur_list '())
 
-(defun fitness-fun (problem heur_list const_struc)
+; calcular heuristica
+(defun joinHeur (state)
+	(setf heur 0)
+
+	(if (null const_struc) (return-from joinHeur heur))
+
+	; heur(state) = A * h1(state) + B * h2 state
+	(loop for i in (list-length heur_list) do
+		(setf heur (+ heur 
+				(* (funcall (nth i heur_list) state) 
+					(nth i const_struc))))
+	)
+	heur
+)
+
+(defun fitness-fun (problem)
 	(let ((copiaProb (copy-structure problem)))
-		; calcular heuristica
-		(defun joinHeur (state)
-			(setf heur 0)
-			; heur(state) = A * h1(state) + B * h2 state
-			(loop for i in (list-length heur_list) do
-				(setf heur (+ heur 
-						(* (funcall (nth i heur_list) state) 
-							(nth i const_struc))))
-			)
-			heur
-		)
-
-		; problema AQUI
+		; aplica a*
 		(setf lista_ac (procura-A* copiaProb 'joinHeur))
 		;aplica accoes ao estado do problema
 		(loop for accao in lista_ac do
 			(setf (problema-estado-inicial copiaProb) (resultado (problema-estado-inicial copiaProb) accao))
 		)
 		( / ( estado-pontos (problema-estado-inicial copiaProb)) (custo-oportunidade (problema-estado-inicial copiaProb)))
+	)
+)
+
+(defun crossOver (problema pai mae)
+	(setf copiaProb (copy-structure problema))
+	(setf racio 0.7)
+	; Esta a ser usado um racio de 70% para a geracao do melhor filho
+	
+	(setf primeiro (make-candidato 
+		:constantes (+ (* racio (candidato-constantes pai)) (* (- 1 racio) (candidato-constantes mae)))))
+	
+	(setf segundo (make-candidato 
+		:constantes (+ (* (- 1 racio) (candidato-constantes pai)) (* racio (candidato-constantes mae)))))
+
+	;calcula pontos do primeiro filho
+	(setf const_struc primeiro)
+	(setf (candidato-racio const_struc) (fitness-fun problema))
+	(setf primeiro const_struc)
+
+	;calcula pontos do segundo filho
+	(setf const_struc segundo)
+	(setf (candidato-racio const_struc) (fitness-fun problema))
+	(setf segundo const_struc)
+
+	(if (> (candidato-racio primeiro) (candidato-racio segundo))
+		(return-from crossOver primeiro)
+		(return-from crossOver segundo)	
 	)
 )
 
