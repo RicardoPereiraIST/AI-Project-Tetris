@@ -926,7 +926,7 @@
 
 (defun genetic-alg (problem heur_list population first-time) 
 	; 1 aplicar funcao de fitness a lista de constantes
-	
+	(if (eq 1 (list-legth population)) return-from genetic-alg population)
 	(cond (eq first-time T)
 		(setf calculated_ppl population)
 		(T (setf calulate_ppl '()) 
