@@ -1,5 +1,3 @@
-
-
 ;;-------------------------------Tipo ACCAO----------------------------------------
 (defun cria-accao (int array) 
 	(cons int array)
@@ -18,12 +16,12 @@
 	(make-array (list 18 10))
 )
 
-(defun tabuleiro-preenchido-p (tab int1 int2)
-	(if 
-	(equal(aref tab int1 int2) t)
-	t
-	nil)
+(defun tabuleiro-preenchido-p (tab int1 int2)     
+		(if (equal(aref tab int1 int2) t)
+		t
+		nil)
 )
+
 
 (defun tabuleiro-altura-coluna (tab int) 
 	(loop for i from 17 downto 0 do
@@ -34,20 +32,10 @@
 	0
 )
 
-(defun tabuleiro-linha-completa (tab int)
-	(loop for j from 0 to 9 do
-		(if
-		(equal(aref tab int j) nil)
-		(return-from tabuleiro-linha-completa nil)
-		)
-	)
-	t
-)	
 
 (defun tabuleiro-linha-completa-p (tab int)
 	(loop for j from 0 to 9 do
-		(if
-		(equal(aref tab int j) nil)
+		(if (not(tabuleiro-preenchido-p tab int j))
 		(return-from tabuleiro-linha-completa-p nil)  
 		)
 	)
@@ -77,7 +65,7 @@
 (defun tabuleiro-topo-preenchido-p(tab)
 	
 	(loop for num_coluna from 0 to 9 do
-		(if (equal (aref tab 17 num_coluna) t)
+		(if (tabuleiro-preenchido-p tab 17 num_coluna)
 			(return-from tabuleiro-topo-preenchido-p t)
 		)
 	)
@@ -87,17 +75,17 @@
 (defun tabuleiros-iguais-p(tab1 tab2)
 	(loop for num_coluna from 0 to 9 do
 		(loop for num_linha from 0 to 17 do
-			(if(not (equal (aref tab1 num_linha num_coluna)
-					(aref tab2 num_linha num_coluna)))
+			(if (or (and (tabuleiro-preenchido-p tab1 num_linha num_coluna) (not(tabuleiro-preenchido-p tab2 num_linha num_coluna))) 
+				(and (not(tabuleiro-preenchido-p tab1 num_linha num_coluna)) (tabuleiro-preenchido-p tab2 num_linha num_coluna)))
 				(return-from tabuleiros-iguais-p nil)
 			)
 		)
 	)
 	t
 )
+
 (defun tabuleiro->array (tab)
 	(let ((array (make-array (list 18 10))))
-
 
 	(loop for num_coluna from 0 to 9 do
 		(loop for num_linha from 0 to 17 do
@@ -219,7 +207,7 @@
 
 (defun solucao (state)              
 	(if (and (not (tabuleiro-topo-preenchido-p (estado-tabuleiro state)))
-		(equal(estado-pecas-por-colocar state) nil))
+		(equal (estado-pecas-por-colocar state) nil))
 	t
 	nil)
 )
@@ -475,7 +463,7 @@
 		(if (tabuleiro-topo-preenchido-p tab)
 			()
 			(loop for k from altura_final_pivot to (+ altura_peca altura_final_pivot) do
-				(if (tabuleiro-linha-completa tab k) 
+				(if (tabuleiro-linha-completa-p tab k) 
 					(progn
 					 	(tabuleiro-remove-linha! tab k)
 					 	(incf count 1)
@@ -524,9 +512,11 @@
 			(loop for y from 0 to (- nr-colunas 1) do
 
 				(if (aref (accao-peca action) x y)
-					(if (tabuleiro-preenchido-p tabu (+ linha x) (+ coluna y))
-						(return-from posso-desenhar nil)
-					)
+					(if (< (+ linha x) 18)
+						(if (tabuleiro-preenchido-p tabu (+ linha x) (+ coluna y))
+							(return-from posso-desenhar nil)
+						)
+					)	
 				)
 			)
 		)
@@ -548,7 +538,9 @@
 			(loop for x from 0 to (- nr-linhas 1) do
 				(loop for y from 0 to (- nr-colunas 1) do
 					(if (aref (accao-peca action) x y)
-						(tabuleiro-preenche! tabu (+ i x) (+ coluna y))
+						(if (< (+ i x) 18)
+							(tabuleiro-preenche! tabu (+ i x) (+ coluna y))
+						)
 					)
 				)
 			)
@@ -594,39 +586,8 @@
 
 ;------------------------------------------------2 Entrega--------------------------------------------
 
-;(load "problema_ADT.lisp")
-;(setf l2(cria-accao 3 peca-l2))
-;(setf t2(cria-accao 1 peca-t2))
-;(setf *a*(cria-tabuleiro))
-;(setf *est1*(cria-estado 0 '(l) nil *a*))
-;(calcula-max-altura *a* l2)
-;(calcula-onde-desenha *a* 3 l2)
-
-;(defstruct problema 
-;	estado-inicial
-;	solucao
-;	accoes
-;	resultado
-;	custo-caminho)
-
-;(defstruct node
-;	estado
-;	parent
-;	accao
-;	cost
-;	depth)
-
-;(defstruct estado
-;	pontos 
-;	pecas-por-colocar
-;	pecas-colocadas
-;	tabuleiro)
 ;----------------------------------NODE------------------------------------
 (defstruct node
-  ;Node for generic search.  A node contains a state, a domain-specific
-  ;representation of a point in the search space.  A node also contains 
-  ;bookkeeping information such as the cost so far (g-cost) and estimated cost 
-  ;to go (h-cost).
   (state (required))        ; a state in the domain
   (parent nil)              ; the parent node of this node
   (action nil)              ; the domain action leading to state
@@ -645,6 +606,10 @@
    )
 )
 
+(defun g-cost (problem state)
+	(funcall (problema-custo-caminho problem) state)
+)
+
 (defun h-cost (problem state)
 	(ignore-value problem)
 	(ignore-value state)
@@ -652,7 +617,12 @@
 )
 ;return heuristic-cost;
 
+(defun f-cost (problem node)
+	(+ (funcall (g-cost problem (node-state node))) (funcall (h-cost problem (node-state node)))) 
+)
+
 ;---------------------------QUEUE---------------------------------
+
 (defstruct q
   (key #'identity)
   (last nil)
@@ -693,10 +663,6 @@
 
 ;------------------------PROCURAS-------------------------------
 
-(defun goal-test(problem node)  
-	(funcall (problema-solucao problem) (node-state node))
-)
-
 (defun expand (node problem)  ;Devolve LIFO
   ;Generate a list of all the nodes that can be reached from a node.
     (let ((nodes nil)
@@ -705,11 +671,13 @@
 	    	(let ((this_action (pop lista_accoes))
 	    		(new_state nil)
 	    		(g 0)
-	    		(h 0))
+	    		(h 0)
+	    		(f 0))
 
-	    		(setf new_state (resultado (node-state node) this_action))
-		    	(setf g (+ (node-g-cost node) (funcall (problema-custo-caminho problem) (node-state node))))  ;custo-caminho do node filho ou do pai? 
-		    	(setf h (h-cost problem (node-state node)))										                     ;Faco a diferenca entre os dois?
+	    		(setf new_state (funcall (problema-resultado problem) (node-state node) this_action))
+		    	(setf g (g-cost problem new_state))
+		    	(setf h (h-cost problem new_state))		
+		    	(setf f (+ g h))								                     
 		    	
 	    		(push (make-node :action this_action 
 			    				:state new_state
@@ -717,7 +685,7 @@
 			    				:depth (1+ (node-depth node))
 			    				:g-cost g
 			    				:h-cost h
-			    				:f-cost (max (node-f-cost node) (+ g h)))
+			    				:f-cost f)
 			    nodes)	
 			)
 		)
@@ -736,11 +704,16 @@
 
 (defun general-search (problem queuing-fn)
   (let ((nodes (make-initial-queue problem queuing-fn)) node)
-    (loop (if (empty-queue? nodes) (RETURN nil))
+    (loop (if (empty-queue? nodes) (RETURN nil))			
 	  (setq node (remove-front nodes))
-	  (if (goal-test problem node) (RETURN node))
-	  (funcall queuing-fn nodes (expand node problem))))                        ;FALTA DEVOLVER A LISTA DAS ACCOES QUE LEVARAM AO ESTADO
+
+	  (if (funcall (problema-solucao problem) (node-state node))
+	   	(RETURN node)
+	  	(funcall queuing-fn nodes (expand node problem))
+	  )
+	)                        
   )
+)
 
 
 ;-------------------------------PROCURA-PP-------------------------------------
@@ -751,14 +724,15 @@
 
 ;-----------------------------PROCURA-A-----------------------------------------
 
-(defun procura-A*(problem heuristic)
-	(solution-actions (best-first-search problem heuristic))
+(defun procura-A*(problem heuristic)           ;perceber o node,sintaxe lambda function
+	
+	(solution-actions (best-first-search problem  #'(lambda(node) (+ (funcall (problema-custo-caminho problem) (node-state node)) (funcall heuristic (node-state node))))))
 )
 
 (defun best-first-search (problem eval-fn)
   ;Search the nodes with the best evaluation first.
-  (solution-actions (general-search problem #'(lambda (old-q nodes) 
-			      (enqueue-by-priority old-q nodes eval-fn)))))
+  (general-search problem #'(lambda (old-q nodes) 
+			      (enqueue-by-priority old-q nodes eval-fn))))
 
 
 ;-------------------------------HEAPS--------------------------------------------
@@ -895,6 +869,7 @@
 		)
 	)
 )
+
 
 
 ;(defstruct problema 
@@ -1074,4 +1049,3 @@
 
 
 (load "utils.lisp")
-
