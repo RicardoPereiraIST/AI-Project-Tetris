@@ -214,7 +214,8 @@
 	solucao ; funcao
 	accoes 	;funcao
 	resultado ; funcao
-	custo-caminho ;funcao)
+	custo-caminho ;funcao
+)
 
 (defun solucao (state)              
 	(if (and (not (tabuleiro-topo-preenchido-p (estado-tabuleiro state)))
@@ -830,7 +831,7 @@
 
 
 
-;Soma das alturas de todas as colunas
+;Soma das alturas de todas as colunas     (minimizar)
 (defun h1 (state)  		;Aggregate height
 	;
 	(let ((aggregate_height 0))
@@ -842,7 +843,7 @@
 )
 
 ;heuristic complete lines??
-; nr de buracos no tabuleiro
+; nr de buracos no tabuleiro      (minimizar)
 (defun h3 (state) 		;buracos cobertos do lado de cima
 	(let ((holes 0))
 
@@ -868,7 +869,8 @@
 	)
 )
 
-;nr de pecas colocadas
+
+;nr de pecas colocadas    (maximizar)
 (defun h5 (state)   	
 	(let ((pecas 0))
 		(loop for i from 0 to 9 do
@@ -893,5 +895,99 @@
 		)
 	)
 )
+
+
+;(defstruct problema 
+;	estado-inicial
+;	solucao
+;	accoes
+;	resultado
+;	custo-caminho)
+
+;(defstruct estado
+;	pontos 
+;	pecas-por-colocar
+;	pecas-colocadas
+;	tabuleiro)
+
+;----------------------------Alg Genetico-----------
+(defun genetic-alg (problem heur_list population) 
+	; 1 aplicar funcao de fitness a lista de constantes
+	(defstruct candidato
+		constantes
+		pontos
+	)
+
+	(let ((new_ppl '())) 
+		(loop for const_list in population do
+			(setf temp (make-candidato 
+							:constantes const_list))
+			;chamar fit fun
+			(setf (candidato-pontos temp) (fitness-fun problem '(h1 h3 h4 h5 h6) population))
+			;ordenar
+			(ordena-candidato temp new_ppl)
+		)
+	)
+
+	; 2 Fazer CrossOver Ideia de escolher os n melhores tais que os 
+	; CrossOver entre os n melhores geram o mesmo numero de 
+	; filhos que os elementos da população actual 
+	; Falta mixing rate
+
+
+	; 3 Mutacao
+	; Necessaria uma prob de mutação
+
+
+
+	(funcall genetic-alg problem heur_list new_ppl)
+)
+
+; Função de fitness --> classifica cada proposta de solucao (calcula pontos)
+; CrossOver -> pais com max pontos
+; Mutacao ->
+
+; Nota: Ordenar a medida que se calcula fitness function
+; estrutura passada por referencia (assim como todos os seus elementos)
+; lista passada por valor
+
+(defun fitness-fun (problem heur_list const_struc)
+	(let ((copiaProb (copy-structure problem)))
+		; calcular heuristica
+		(defun joinHeur (state)
+			(setf heur 0)
+			; heur(state) = A * h1(state) + B * h2 state
+			(loop for i in (list-length heur_list) do
+				(setf heur (+ heur 
+						(* (funcall (nth i heur_list) 
+							(problema-estado-inicial copiaProb)) 
+							(nth i const_struc))))
+			)
+			heur
+		)
+
+		; problema AQUI
+		(setf lista_ac (procura-A* copiaProb 'joinHeur))
+		;aplica accoes ao estado do problema
+		(loop for accao in lista_ac do
+			(setf (problema-estado-inicial copiaProb) (resultado (problema-estado-inicial copiaProb) accao))
+		)
+		(estado-pontos (problema-estado-inicial copiaProb))
+	)
+)
+
+(defun ordena-candidato (cand lista)
+	;passar por referencia               AQUI
+	(if (null lista)
+		(return-from ordena-candidato)
+		(if (> (candidato-pontos cand) (car lista))
+			(append '(cand) lista)
+			(append lista '(cand))
+		)
+	)
+
+)
+
+
 (load "utils.lisp")
 
