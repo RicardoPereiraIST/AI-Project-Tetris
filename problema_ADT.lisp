@@ -860,7 +860,7 @@
 )
 
 
-(defun h4 (state)  		;sum dos modulos das diferencas de alturas aka slopes
+(defun h4 (state)  		;sum dos modulos das diferencas de alturas aka slopes (minimizar)
 	(let ((count 0))
 		(loop for i from 0 to 8 do
 			(incf count (abs(- (tabuleiro-altura-coluna (estado-tabuleiro state) i) (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))))
@@ -870,7 +870,7 @@
 )
 
 
-;nr de pecas colocadas    (maximizar)
+;nr de pecas colocadas    (minimizar)
 (defun h5 (state)   	
 	(let ((pecas 0))
 		(loop for i from 0 to 9 do
@@ -915,41 +915,57 @@
 	; 1 aplicar funcao de fitness a lista de constantes
 	(defstruct candidato
 		constantes
-		pontos
+		racio
 	)
 
-	(let ((new_ppl '())) 
-		(loop for const_list in population do
-			(setf temp (make-candidato 
-							:constantes const_list))
-			;chamar fit fun
-			(setf (candidato-pontos temp) (fitness-fun problem '(h1 h3 h4 h5 h6) population))
-			;ordenar
-			(ordena-candidato temp new_ppl)
-		)
+	(setf calulate_ppl '()) 
+	(loop for const_list in calculated_ppl do
+		(setf temp (make-candidato 
+						:constantes const_list))
+		;chamar fit fun
+		(setf (candidato-racio temp) (fitness-fun problem '(h1 h3 h4 h5 h6) population))
+		(append calculated_ppl 'temp)
 	)
 
 	; 2 Fazer CrossOver Ideia de escolher os n melhores tais que os 
 	; CrossOver entre os n melhores geram o mesmo numero de 
 	; filhos que os elementos da população actual 
-	; Falta mixing rate
+	; Falta mixing rate 
 
+	(setf select_ppl '())
+	(loop for i from 0 to (/ (list-length population) 2) do
+		(append select_ppl '(nth (random (list-length population)) population))
+	)
+
+	;ordena pelo racio
+	(sort new_ppl (lambda(struc1 struc2) (> (candidato-racio struc1) (candidato-racio struc2))))
+
+	; Escolher melhores
+	
 
 	; 3 Mutacao
 	; Necessaria uma prob de mutação
 
 
 
+
+	
 	(funcall genetic-alg problem heur_list new_ppl)
 )
 
-; Função de fitness --> classifica cada proposta de solucao (calcula pontos)
-; CrossOver -> pais com max pontos
+; Função de fitness --> classifica cada proposta de solucao (calcula racio de pontos/max pontos)
+; CrossOver -> pais com max racio
 ; Mutacao ->
 
 ; Nota: Ordenar a medida que se calcula fitness function
 ; estrutura passada por referencia (assim como todos os seus elementos)
 ; lista passada por valor
+
+;VAR GLOBAIS 
+; heur_list
+; const_strc
+
+(setf heur_list '())
 
 (defun fitness-fun (problem heur_list const_struc)
 	(let ((copiaProb (copy-structure problem)))
@@ -959,8 +975,7 @@
 			; heur(state) = A * h1(state) + B * h2 state
 			(loop for i in (list-length heur_list) do
 				(setf heur (+ heur 
-						(* (funcall (nth i heur_list) 
-							(problema-estado-inicial copiaProb)) 
+						(* (funcall (nth i heur_list) state) 
 							(nth i const_struc))))
 			)
 			heur
@@ -972,20 +987,8 @@
 		(loop for accao in lista_ac do
 			(setf (problema-estado-inicial copiaProb) (resultado (problema-estado-inicial copiaProb) accao))
 		)
-		(estado-pontos (problema-estado-inicial copiaProb))
+		( / ( estado-pontos (problema-estado-inicial copiaProb)) (custo-oportunidade (problema-estado-inicial copiaProb)))
 	)
-)
-
-(defun ordena-candidato (cand lista)
-	;passar por referencia               AQUI
-	(if (null lista)
-		(return-from ordena-candidato)
-		(if (> (candidato-pontos cand) (car lista))
-			(append '(cand) lista)
-			(append lista '(cand))
-		)
-	)
-
 )
 
 
