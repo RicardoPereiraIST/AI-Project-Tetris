@@ -962,8 +962,7 @@
 	(setf poped_const (append poped_const (pop select_ppl)))
 	
 	(loop while (< (list-length new_ppl) 
-				(floor (/ (list-length population) 2)))
-
+				(list-length select_ppl))
 		(setf const_list (pop select_ppl)) ; pop do elemento 
 		(loop for i from 0 to (list-length poped_const) do
 			;bater a const_list contra todas as const_list do poped_const e adicionar os  novos elementos a nova populacao
@@ -976,7 +975,6 @@
 			)
 		)
 	)
-
 	; 3 Mutacao
 	; Necessaria uma prob de mutação 0.05
 
@@ -1028,12 +1026,20 @@
 	(setf copiaProb (copy-structure problema))
 	(setf racio 0.7)
 	; Esta a ser usado um racio de 70% para a geracao do melhor filho
-	
+	(setf const_list1 '())
+	(setf const_list2 '())
+	(loop for j from 0 to (list-length (candidato-constantes pai)) do
+		(setf const_list1 (append const_list1 '(+ (* racio (nth j (candidato-constantes pai))) (* (- 1 racio) (nth j (candidato-constantes mae))))))
+		(setf const_list2 (append const_list2 '(+ (* (- 1 racio) (nth j (candidato-constantes pai))) (* racio (nth j (candidato-constantes mae))))))
+
+
+
+	)
 	(setf primeiro (make-candidato 
-		:constantes (+ (* racio (candidato-constantes pai)) (* (- 1 racio) (candidato-constantes mae)))))
-	
+		:constantes const_list1))
+	; QUALQUER COISA MAL candidato é lista de constantes
 	(setf segundo (make-candidato 
-		:constantes (+ (* (- 1 racio) (candidato-constantes pai)) (* racio (candidato-constantes mae)))))
+		:constantes const_list2))
 
 	;calcula pontos do primeiro filho
 	(setf const_struc primeiro)
