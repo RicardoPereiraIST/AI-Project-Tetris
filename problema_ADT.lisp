@@ -958,11 +958,23 @@
 	(setf new_ppl '())
 	; Lista de elementos retirados da populacao dos pais	
 	(setf poped_const '())
+	; guarda 1o  melhor elemento
+	(setf poped_const (append poped_const (pop select_ppl)))
+	
 	(loop while (< (list-length new_ppl) 
 				(floor (/ (list-length population) 2)))
-		
 
-
+		(setf const_list (pop select_ppl)) ; pop do elemento 
+		(loop for i from 0 to (list-length poped_const) do
+			;bater a const_list contra todas as const_list do poped_const e adicionar os  novos elementos a nova populacao
+			(setf pai const_list)
+			(setf mae (nth i poped_const))
+			(setf new_ppl (append new_ppl '(crossOver problem pai mae)))
+			(if (>= (list-length new_ppl) 
+				(floor (/ (list-length population) 2)))
+				(return)
+			)
+		)
 	)
 
 	; 3 Mutacao
