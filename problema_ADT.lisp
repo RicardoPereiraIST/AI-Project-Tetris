@@ -976,12 +976,27 @@
 		)
 	)
 	; 3 Mutacao
-	; Necessaria uma prob de mutação 0.05
+	; Necessaria uma prob de mutação 0.001 (1/1000)
+	(setf guess (random 1000))
+	(cond (= guess 500)
+		(T 
+			; 0 troca com 2 e 1 troca com 4
+			(loop for const in new_ppl do
+				(let ((aux1 (nth 0 (candidato-constantes const))))
+				
+				(setf (nth 0 (candidato-constantes const)) (nth 2 (candidato-constantes const)) )
+				
+				(setf (nth 2 (candidato-constantes const)) aux1)
+				)
 
-
-
-
-	
+				(let ((aux2 (nth 1 (candidato-constantes const))))
+				(setf (nth 1 (candidato-constantes const)) (nth 4 (candidato-constantes const)) )
+				(setf (nth 4(candidato-constantes const)) aux2)
+				)
+			)
+		)
+	)
+		
 	(funcall genetic-alg problem heur_list new_ppl nil)
 )
 
