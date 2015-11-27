@@ -202,7 +202,7 @@
 	solucao ; funcao
 	accoes 	;funcao
 	resultado ; funcao
-	custo-caminho ;funcao)
+	custo-caminho ) ;funcao
 
 (defun solucao (state)              
 	(if (and (not (tabuleiro-topo-preenchido-p (estado-tabuleiro state)))
@@ -787,17 +787,23 @@
 	;procura-best : array x lista pecas -> accoes
 	;Devolve sequencia de accoes que levam a maximiazar pontos
 
-	(let state (make-estado
-		:pontos 0
-		:pecas-por-colocar pecas-por-colocar
-		:pecas-colocadas nil
-		:tabuleiro (array->tabuleiro array)))
+	(let ((state nil)
+		(problem nil))
+	
+		(setf state (cria-estado 0 pecas-por-colocar nil (array->tabuleiro array)))
+		;(setf state (make-estado  ;cria-estado
+		;:pontos 0
+		;:pecas-por-colocar pecas-por-colocar
+		;:pecas-colocadas nil
+		;:tabuleiro (array->tabuleiro array)))
 
-	(let problem (make-problema
+		(setf problem (make-problema
 					:estado-inicial state))
 
-	(best-first-search problem fn-heuristica)
+		(best-first-search problem #'h1)  ;h1 apenas para exemplo
+	)
 )
+
 
 
 ;--------------------------------------------Heuristicas-----------------------------------
