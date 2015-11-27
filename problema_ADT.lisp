@@ -725,14 +725,15 @@
 ;-----------------------------PROCURA-A-----------------------------------------
 
 (defun procura-A*(problem heuristic)           ;perceber o node,sintaxe lambda function
-	
-	(solution-actions (best-first-search problem  #'(lambda(node) (+ (funcall (problema-custo-caminho problem) (node-state node)) (funcall heuristic (node-state node))))))
+	(solution-actions (best-first-search problem  #'(lambda(node) (write heuristic) (+ (funcall (problema-custo-caminho problem) (node-state node)) (funcall heuristic (node-state node))) (write heuristic))))
+
 )
 
 (defun best-first-search (problem eval-fn)
   ;Search the nodes with the best evaluation first.
   (general-search problem #'(lambda (old-q nodes) 
-			      (enqueue-by-priority old-q nodes eval-fn))))
+			      (enqueue-by-priority old-q nodes eval-fn)))
+  )
 
 
 ;-------------------------------HEAPS--------------------------------------------
@@ -795,7 +796,8 @@
 		:tabuleiro (array->tabuleiro array)))
 
 	(setf problem (make-problema
-					:estado-inicial state))
+					:estado-inicial state
+					:custo-caminho  #'custo-oportunidade))
 	(genetic-alg problem heur_list population T)
 	;(best-first-search problem fn-heuristica)
 )
@@ -902,30 +904,34 @@
 (defun genetic-alg (problem heur_list population first-time) 
 	; 1 aplicar funcao de fitness a lista de constantes
 	(if (eq 1 (list-length population)) (return-from genetic-alg population))
-	(cond (T
-		(setf calculated_ppl population))
+
+	(cond 
 		((eq first-time T)
 		 (setf calulate_ppl '()) 
-			(loop for const_list in calculated_ppl do
+			(loop for const_list in population do
 				(setf const_struc (make-candidato 
 								:constantes const_list))
 				;chamar fit fun
 				(setf (candidato-racio const_struc) (fitness-fun problem))
-				(append calculated_ppl 'temp)
+				(push 'const_strc calculate_ppl)
 			)
 		)
+		(T 	(setf calculate_ppl population))  ; calculated_ppl tem de ser sempre uma estrutura
+		
 	)
-	(write "teste")
+	
 	; 2 Fazer CrossOver Ideia de escolher os n melhores tais que os 
 	; CrossOver entre os n melhores geram o mesmo numero de 
 	; filhos que os elementos da população actual 
 	; Falta mixing rate 0.7 0.3
 
-	(setf select_ppl '())
+	(setf select_ppl nil)
 	(loop for i from 0 to (floor (/ (list-length population) 2)) do
-		(append select_ppl '(nth (random (list-length population)) population))
+		(setf sel (nth (random (list-length population)) population))
+		(write sel)
+		(push sel select_ppl)
 	)
-	(write "teste2")
+	(write select_ppl)
 	;ordena pelo racio
 	(sort select_ppl (lambda(struc1 struc2) (> (candidato-racio struc1) (candidato-racio struc2))))
 
@@ -935,30 +941,22 @@
 	; Lista de elementos retirados da populacao dos pais	
 	(setf poped_const '())
 	; guarda 1o  melhor elemento
-	(setf poped_const (append poped_const (pop select_ppl)))
-	
-	(loop for cand in select_ppl do
+	(push (pop select_ppl) poped_const)
+	(loop for j from 1 to (list-length select_ppl) do
+		
 		(setf const_list (pop select_ppl)) ; pop do elemento 
-		(write (list-length new_ppl))
-		(write "\n")
-		(write (/ (list-length population) 2))
-		
-		
-		(loop for i from 0 to (- (list-length poped_const) 1) do
+		(loop for i from (- (list-length poped_const) 1) downto 0 do
 			;bater a const_list contra todas as const_list do poped_const e adicionar os  novos elementos a nova populacao
 			(setf pai const_list)
 			(setf mae (nth i poped_const))
-			(setf new_ppl (append new_ppl (crossOver problem pai mae)))
-			(write (crossOver problem pai mae))
+			(push (crossOver problem pai mae) new_ppl)
 			(if (>= (list-length new_ppl) 
 				(floor (/ (list-length population) 2)))
 				(return)
 			)
 		)
 	)
-	(write "ddd")
-	(write new_ppl)
-	(write "ggg")
+	
 	; 3 Mutacao
 	; Necessaria uma prob de mutação 0.001 (1/1000)
 	(setf guess (random 1000))
@@ -979,7 +977,6 @@
 			)
 		)
 	)
-	(write new_ppl)	
 	(genetic-alg problem heur_list new_ppl nil)
 )
 
@@ -995,12 +992,13 @@
 
 ; calcular heuristica
 (defun joinHeur (state)
+	(write "in")
 	(setf heur 0)
-
 	(if (null const_struc) (return-from joinHeur heur))
-
+	(write "kk")
 	; heur(state) = A * h1(state) + B * h2 state
-	(loop for i in (list-length heur_list) do
+	(loop for i from  0 below (list-length heur_list) do
+		(write i)
 		(setf heur (+ heur 
 				(* (funcall (nth i heur_list) state) 
 					(nth i const_struc))))
@@ -1009,15 +1007,16 @@
 )
 
 (defun fitness-fun (problem)
-	(let ((copiaProb (copy-structure problem)))
+	(setf copiaProb (copy-structure problem)) 
 		; aplica a*
+		(write "gg")
 		(setf lista_ac (procura-A* copiaProb 'joinHeur))
 		;aplica accoes ao estado do problema
+		(write "tt")
 		(loop for accao in lista_ac do
 			(setf (problema-estado-inicial copiaProb) (resultado (problema-estado-inicial copiaProb) accao))
 		)
 		( / ( estado-pontos (problema-estado-inicial copiaProb)) (custo-oportunidade (problema-estado-inicial copiaProb)))
-	)
 )
 
 (defun crossOver (problema pai mae)
@@ -1026,7 +1025,7 @@
 	; Esta a ser usado um racio de 70% para a geracao do melhor filho
 	(setf const_list1 '())
 	(setf const_list2 '())
-	(loop for j from 0 to (list-length (candidato-constantes pai)) do
+	(loop for j from 0 below (list-length (candidato-constantes pai)) do
 		(setf const_list1 (append const_list1 '(+ (* racio (nth j (candidato-constantes pai))) (* (- 1 racio) (nth j (candidato-constantes mae))))))
 		(setf const_list2 (append const_list2 '(+ (* (- 1 racio) (nth j (candidato-constantes pai))) (* racio (nth j (candidato-constantes mae))))))
 

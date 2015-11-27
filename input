@@ -1,17 +1,14 @@
-(load "problema_ADT.lisp")
-;;; Teste 25 E2
-;;; procura-best num tabuleiro com 4 jogadadas por fazer. Os grupos tem um tempo limitado para conseguir obter pelo menos 500 pontos. 
-;;; deve retornar IGNORE
-(ignore-value (setf a1 '#2A((T T T T NIL NIL T T T T)(T T T NIL NIL NIL T T T T)(T T T NIL NIL NIL T T T T)(T T T NIL NIL NIL T T T T)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL))))
-
-;(procura-best a1 '(t i l l)))
-
-(setf heurlst '())
-(loop for i from 0 to 100 do
-	(setf templst '())
-	(loop for i from 1 to 4 do
-		(setf value (* (if (= (random 2) 1) -1 1) (random 10)))
-		(setf templst (append templst (list value)))
-	)
-	(setf heurlst (append heurlst (list templst)))
-)
+;;; Teste 14
+;;; Testes fn resultado
+;;deve retornar IGNORE
+(ignore-value (setf estado1 (make-estado :pontos 50 :pecas-por-colocar '(i j) :pecas-colocadas '(z z z) :tabuleiro (cria-tabuleiro))))
+;;deve retornar IGNORE
+(ignore-value (setf estado2 (resultado estado1 '(3 . #2A((T T nil)(nil T T))))))
+;;deve retornar NIL
+(eq estado1 estado2)
+;;deve retornar '(I Z Z Z)
+(estado-pecas-colocadas estado2)
+;;deve retornar '(J)
+(estado-pecas-por-colocar estado2)
+;;deve retornar 50
+(estado-pontos estado2)
