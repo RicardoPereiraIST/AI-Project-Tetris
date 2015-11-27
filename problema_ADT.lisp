@@ -773,7 +773,7 @@
   (vector-push-extend nil heap)
   (let ((i (- (length heap) 1))
 	(val (funcall key item)))
-    (loop while (and (> i 0) (>= (heap-val heap (heap-parent i) key) val)) do 
+    (loop (when(and (> i 0) (>= (heap-val heap (heap-parent i) key) val)) (return T))  
     	(setf (aref heap i) (aref heap (heap-parent i))
 	       i (heap-parent i)))
     (setf (aref heap i) item)))
@@ -784,20 +784,20 @@
 
 
 ; ------------------------------ Procura Best
-(defun procura-best (array pecas-por-colocar)
+(defun procura-best (array pecas-por-colocar population)
 	;procura-best : array x lista pecas -> accoes
 	;Devolve sequencia de accoes que levam a maximiazar pontos
 
-	(let state (make-estado
+	(setf state (make-estado
 		:pontos 0
 		:pecas-por-colocar pecas-por-colocar
 		:pecas-colocadas nil
 		:tabuleiro (array->tabuleiro array)))
 
-	(let problem (make-problema
+	(setf problem (make-problema
 					:estado-inicial state))
-
-	(best-first-search problem fn-heuristica)
+	(genetic-alg problem heur_list population T)
+	;(best-first-search problem fn-heuristica)
 )
 
 
@@ -901,10 +901,11 @@
 
 (defun genetic-alg (problem heur_list population first-time) 
 	; 1 aplicar funcao de fitness a lista de constantes
-	(if (eq 1 (list-legth population)) return-from genetic-alg population)
-	(cond (eq first-time T)
-		(setf calculated_ppl population)
-		(T (setf calulate_ppl '()) 
+	(if (eq 1 (list-length population)) (return-from genetic-alg population))
+	(cond (T
+		(setf calculated_ppl population))
+		((eq first-time T)
+		 (setf calulate_ppl '()) 
 			(loop for const_list in calculated_ppl do
 				(setf const_struc (make-candidato 
 								:constantes const_list))
@@ -912,9 +913,9 @@
 				(setf (candidato-racio const_struc) (fitness-fun problem))
 				(append calculated_ppl 'temp)
 			)
-
 		)
 	)
+	(write "teste")
 	; 2 Fazer CrossOver Ideia de escolher os n melhores tais que os 
 	; CrossOver entre os n melhores geram o mesmo numero de 
 	; filhos que os elementos da população actual 
@@ -924,7 +925,7 @@
 	(loop for i from 0 to (floor (/ (list-length population) 2)) do
 		(append select_ppl '(nth (random (list-length population)) population))
 	)
-
+	(write "teste2")
 	;ordena pelo racio
 	(sort select_ppl (lambda(struc1 struc2) (> (candidato-racio struc1) (candidato-racio struc2))))
 
@@ -936,25 +937,32 @@
 	; guarda 1o  melhor elemento
 	(setf poped_const (append poped_const (pop select_ppl)))
 	
-	(loop while (< (list-length new_ppl) 
-				(list-length select_ppl))
+	(loop for cand in select_ppl do
 		(setf const_list (pop select_ppl)) ; pop do elemento 
-		(loop for i from 0 to (list-length poped_const) do
+		(write (list-length new_ppl))
+		(write "\n")
+		(write (/ (list-length population) 2))
+		
+		
+		(loop for i from 0 to (- (list-length poped_const) 1) do
 			;bater a const_list contra todas as const_list do poped_const e adicionar os  novos elementos a nova populacao
 			(setf pai const_list)
 			(setf mae (nth i poped_const))
-			(setf new_ppl (append new_ppl '(crossOver problem pai mae)))
+			(setf new_ppl (append new_ppl (crossOver problem pai mae)))
+			(write (crossOver problem pai mae))
 			(if (>= (list-length new_ppl) 
 				(floor (/ (list-length population) 2)))
 				(return)
 			)
 		)
 	)
+	(write "ddd")
+	(write new_ppl)
+	(write "ggg")
 	; 3 Mutacao
 	; Necessaria uma prob de mutação 0.001 (1/1000)
 	(setf guess (random 1000))
-	(cond (= guess 500)
-		(T 
+	(cond ((= guess 500) 
 			; 0 troca com 2 e 1 troca com 4
 			(loop for const in new_ppl do
 				(let ((aux1 (nth 0 (candidato-constantes const))))
@@ -971,8 +979,8 @@
 			)
 		)
 	)
-		
-	(funcall genetic-alg problem heur_list new_ppl nil)
+	(write new_ppl)	
+	(genetic-alg problem heur_list new_ppl nil)
 )
 
 ; Função de fitness --> classifica cada proposta de solucao (calcula racio de pontos/max pontos)
