@@ -635,6 +635,11 @@
 
 (defun make-initial-queue (problem queuing-fn)
   (let ((q (make-empty-queue)))
+  	(write "debug sucks")
+  	(write (create-start-node problem))
+	(write "nanjjj")
+  	(write q)
+  	(write "money")
     (funcall queuing-fn q (list (create-start-node problem)))
     q))
 
@@ -703,8 +708,15 @@
 
 
 (defun general-search (problem queuing-fn)
+	; PROBLEMA AQUI
+
+	(write (make-initial-queue problem queuing-fn))
+	(write "mama")
+	(setf non (make-initial-queue problem queuing-fn))
+  	(write "kss")
   (let ((nodes (make-initial-queue problem queuing-fn)) node)
-    (loop (if (empty-queue? nodes) (RETURN nil))			
+  	
+    (loop (if (empty-queue? nodes) (return-from general-search nil))			
 	  (setq node (remove-front nodes))
 
 	  (if (funcall (problema-solucao problem) (node-state node))
@@ -713,6 +725,8 @@
 	  )
 	)                        
   )
+
+  
 )
 
 
@@ -725,14 +739,17 @@
 ;-----------------------------PROCURA-A-----------------------------------------
 
 (defun procura-A*(problem heuristic)           ;perceber o node,sintaxe lambda function
-	(solution-actions (best-first-search problem  #'(lambda(node) (write heuristic) (+ (funcall (problema-custo-caminho problem) (node-state node)) (funcall heuristic (node-state node))) (write heuristic))))
+	
+	(solution-actions (best-first-search problem  #'(lambda(node) (return (+ (funcall (problema-custo-caminho problem) (node-state node)) (funcall heuristic (node-state node)))) )))
 
 )
 
 (defun best-first-search (problem eval-fn)
+
   ;Search the nodes with the best evaluation first.
   (general-search problem #'(lambda (old-q nodes) 
 			      (enqueue-by-priority old-q nodes eval-fn)))
+  (write "jjj")
   )
 
 
@@ -791,7 +808,7 @@
 
 	(setf state (make-estado
 		:pontos 0
-		:pecas-por-colocar pecas-por-colocar
+		:pecas-por-colocar pecas-por-colocar 
 		:pecas-colocadas nil
 		:tabuleiro (array->tabuleiro array)))
 
@@ -863,13 +880,14 @@
 ;Devolve maior slope
 (defun h6 (state)  		;higher slope
 	(let ((maior 0))
-		(loop for i from 0 to 9 do
+		(loop for i from 0 below 9 do
 			(if (> (abs(- (tabuleiro-altura-coluna (estado-tabuleiro state) i) (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))) maior)
 				(setf maior (abs(- (tabuleiro-altura-coluna (estado-tabuleiro state) i) (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))))
-				()
 			)
 		)
+	maior
 	)
+
 )
 
 
@@ -927,6 +945,7 @@
 
 	(setf select_ppl nil)
 	(loop for i from 0 to (floor (/ (list-length population) 2)) do
+
 		(setf sel (nth (random (list-length population)) population))
 		(write sel)
 		(push sel select_ppl)
@@ -995,14 +1014,17 @@
 	(write "in")
 	(setf heur 0)
 	(if (null const_struc) (return-from joinHeur heur))
-	(write "kk")
 	; heur(state) = A * h1(state) + B * h2 state
 	(loop for i from  0 below (list-length heur_list) do
-		(write i)
+	
+		(write (nth i (candidato-constantes const_struc)))
 		(setf heur (+ heur 
 				(* (funcall (nth i heur_list) state) 
-					(nth i const_struc))))
+					(nth i (candidato-constantes const_struc)))))
 	)
+	(write "saiu")
+	(write heur)
+	(write " gg ")
 	heur
 )
 
