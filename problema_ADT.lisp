@@ -634,14 +634,12 @@
   (= (length (q-elements q)) 0))
 
 (defun make-initial-queue (problem queuing-fn)
-  (let ((q (make-empty-queue)))
-  	(write "debug sucks")
-  	(write (create-start-node problem))
-	(write "nanjjj")
-  	(write q)
-  	(write "money")
-    (funcall queuing-fn q (list (create-start-node problem)))
-    q))
+  (setf q (make-empty-queue))
+   	(write "money")
+    (enqueue-at-front q (list (create-start-node problem)))
+    ;(funcall queuing-fn q (list (create-start-node problem)))
+    q
+ )
 
 (defun enqueue-at-front (q items)
   ;Add a list of items to the front of the queue.
@@ -709,22 +707,22 @@
 
 (defun general-search (problem queuing-fn)
 	; PROBLEMA AQUI
-
+	(write queuing-fn)
 	(write (make-initial-queue problem queuing-fn))
 	(write "mama")
-	(setf non (make-initial-queue problem queuing-fn))
-  	(write "kss")
-  (let ((nodes (make-initial-queue problem queuing-fn)) node)
   	
+  (setf nodes (make-initial-queue problem queuing-fn))
+  	(write nodes)
+  	(write "jajons")
     (loop (if (empty-queue? nodes) (return-from general-search nil))			
 	  (setq node (remove-front nodes))
 
-	  (if (funcall (problema-solucao problem) (node-state node))
-	   	(RETURN node)
-	  	(funcall queuing-fn nodes (expand node problem))
-	  )
-	)                        
-  )
+	  ;(if (funcall (problema-solucao problem) (node-state node))
+	   ;	(RETURN node)
+	  ;	(funcall queuing-fn nodes (expand node problem))
+	  ;)
+	                        
+  	)
 
   
 )
@@ -749,7 +747,6 @@
   ;Search the nodes with the best evaluation first.
   (general-search problem #'(lambda (old-q nodes) 
 			      (enqueue-by-priority old-q nodes eval-fn)))
-  (write "jjj")
   )
 
 
@@ -925,19 +922,20 @@
 
 	(cond 
 		((eq first-time T)
-		 (setf calulate_ppl '()) 
+		 (setf calculate_ppl '()) 
 			(loop for const_list in population do
 				(setf const_struc (make-candidato 
 								:constantes const_list))
 				;chamar fit fun
 				(setf (candidato-racio const_struc) (fitness-fun problem))
-				(push 'const_strc calculate_ppl)
+				(push const_struc calculate_ppl)
 			)
 		)
 		(T 	(setf calculate_ppl population))  ; calculated_ppl tem de ser sempre uma estrutura
 		
 	)
-	
+	(write calculate_ppl)
+	(write "jaddd")
 	; 2 Fazer CrossOver Ideia de escolher os n melhores tais que os 
 	; CrossOver entre os n melhores geram o mesmo numero de 
 	; filhos que os elementos da população actual 
@@ -945,10 +943,7 @@
 
 	(setf select_ppl nil)
 	(loop for i from 0 to (floor (/ (list-length population) 2)) do
-
-		(setf sel (nth (random (list-length population)) population))
-		(write sel)
-		(push sel select_ppl)
+		(push (nth (random (list-length calculate_ppl)) calculate_ppl) select_ppl)
 	)
 	(write select_ppl)
 	;ordena pelo racio
@@ -1011,7 +1006,6 @@
 
 ; calcular heuristica
 (defun joinHeur (state)
-	(write "in")
 	(setf heur 0)
 	(if (null const_struc) (return-from joinHeur heur))
 	; heur(state) = A * h1(state) + B * h2 state
@@ -1022,23 +1016,23 @@
 				(* (funcall (nth i heur_list) state) 
 					(nth i (candidato-constantes const_struc)))))
 	)
-	(write "saiu")
-	(write heur)
-	(write " gg ")
 	heur
 )
 
 (defun fitness-fun (problem)
 	(setf copiaProb (copy-structure problem)) 
 		; aplica a*
-		(write "gg")
 		(setf lista_ac (procura-A* copiaProb 'joinHeur))
 		;aplica accoes ao estado do problema
-		(write "tt")
 		(loop for accao in lista_ac do
 			(setf (problema-estado-inicial copiaProb) (resultado (problema-estado-inicial copiaProb) accao))
 		)
-		( / ( estado-pontos (problema-estado-inicial copiaProb)) (custo-oportunidade (problema-estado-inicial copiaProb)))
+		(write copiaProb)
+		(write (custo-oportunidade (problema-estado-inicial copiaProb)) )
+		(if (eq (custo-oportunidade (problema-estado-inicial copiaProb)) 0)
+			0
+			( / ( estado-pontos (problema-estado-inicial copiaProb)) (custo-oportunidade (problema-estado-inicial copiaProb)))
+		)
 )
 
 (defun crossOver (problema pai mae)
