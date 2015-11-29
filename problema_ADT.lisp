@@ -798,15 +798,20 @@
 		;:tabuleiro (array->tabuleiro array)))
 
 		(setf problem (make-problema
-					:estado-inicial state))
+					:estado-inicial state
+					:solucao #'solucao
+				   	:accoes #'accoes
+				   	:resultado #'resultado
+				   	:custo-caminho #'custo-oportunidade))
 
-		(best-first-search problem #'h1)  ;h1 apenas para exemplo
+		(solution-actions (best-first-search problem #'joinHeur) )
 	)
 )
 
 
 
 ;--------------------------------------------Heuristicas-----------------------------------
+
 
 
 
@@ -828,7 +833,7 @@
 
 		(loop for i from 0 to 9 do
 			(loop for j from (- (tabuleiro-altura-coluna (estado-tabuleiro state) i) 1) downto 0 do
-				(if (tabuleiro-preenchido-p (estado-tabuleiro state) i j)
+				(if (tabuleiro-preenchido-p (estado-tabuleiro state) j i)
 					()
 					(incf holes 1)
 				)
@@ -853,7 +858,7 @@
 	(let ((pecas 0))
 		(loop for i from 0 to 9 do
 			(loop for j from 0 to (- (tabuleiro-altura-coluna (estado-tabuleiro state) i) 1) do
-				(if (tabuleiro-preenchido-p (estado-tabuleiro state) i j)
+				(if (tabuleiro-preenchido-p (estado-tabuleiro state) j i)
 					(incf pecas 1)
 				)
 			)
@@ -865,13 +870,21 @@
 ;Devolve maior slope
 (defun h6 (state)  		;higher slope
 	(let ((maior 0))
-		(loop for i from 0 to 9 do
+		(loop for i from 0 to 8 do
 			(if (> (abs(- (tabuleiro-altura-coluna (estado-tabuleiro state) i) (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))) maior)
 				(setf maior (abs(- (tabuleiro-altura-coluna (estado-tabuleiro state) i) (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))))
-				()
+				
 			)
 		)
+	maior
 	)
+)
+
+; calcular heuristica
+(defun joinHeur (node)
+	(+ (* 0.48335236 (h1 (node-state node)) (* -0.29525357  (h3 (node-state node))) 
+		(* -0.12678  (h4 (node-state node))) (* 0.2999297 (h5 (node-state node)))
+		(* 0.5709712  (h6 (node-state node)))))
 )
 
 (load "utils.fas")
