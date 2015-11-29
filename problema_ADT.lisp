@@ -509,7 +509,6 @@
 	(when (and(< x 18) (>= x 0)) 
 		(loop for x from 0 to (- nr-linhas 1) do
 			(loop for y from 0 to (- nr-colunas 1) do
-
 				(if (aref (accao-peca action) x y)
 					(if (< (+ linha x) 18)
 						(if (tabuleiro-preenchido-p tabu (+ linha x) (+ coluna y))
@@ -798,7 +797,11 @@
 		;:tabuleiro (array->tabuleiro array)))
 
 		(setf problem (make-problema
-					:estado-inicial state))
+					:estado-inicial state
+					:solucao #'solucao
+				    :accoes #'accoes
+				    :resultado #'resultado
+				    :custo-caminho #'custo-oportunidade))
 
 		(genetic-alg problem heur_list consta T) 
 		;(best-first-search problem #'h1)  ;h1 apenas para exemplo
@@ -829,7 +832,7 @@
 
 		(loop for i from 0 to 9 do
 			(loop for j from (- (tabuleiro-altura-coluna (estado-tabuleiro state) i) 1) downto 0 do
-				(if (tabuleiro-preenchido-p (estado-tabuleiro state) i j)
+				(if (tabuleiro-preenchido-p (estado-tabuleiro state) j i)
 					()
 					(incf holes 1)
 				)
@@ -854,7 +857,7 @@
 	(let ((pecas 0))
 		(loop for i from 0 to 9 do
 			(loop for j from 0 to (- (tabuleiro-altura-coluna (estado-tabuleiro state) i) 1) do
-				(if (tabuleiro-preenchido-p (estado-tabuleiro state) i j)
+				(if (tabuleiro-preenchido-p (estado-tabuleiro state) j i)
 					(incf pecas 1)
 				)
 			)
@@ -866,12 +869,13 @@
 ;Devolve maior slope
 (defun h6 (state)  		;higher slope
 	(let ((maior 0))
-		(loop for i from 0 to 9 do
+		(loop for i from 0 to 8 do
 			(if (> (abs(- (tabuleiro-altura-coluna (estado-tabuleiro state) i) (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))) maior)
 				(setf maior (abs(- (tabuleiro-altura-coluna (estado-tabuleiro state) i) (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))))
-				()
+				
 			)
 		)
+	maior
 	)
 )
 
@@ -906,39 +910,34 @@
 (defun genetic-alg (problem heur_list population first-time) 
 	; 1 aplicar funcao de fitness a lista de constantes
 	(if (eq 1 (list-length population)) (return-from genetic-alg population))
-
 	(cond 
 		((eq first-time T)
 		 (setf calculate_ppl '()) 
 			(loop for const_list in population do
 				(setf const_struc (make-candidato 
-								:constantes const_list))
+								:constantes const_list
+								:racio 0))
 				;chamar fit fun
 				(setf (candidato-racio const_struc) (fitness-fun problem))
+	
 				(push const_struc calculate_ppl)
 			)
 		)
 		(T 	(setf calculate_ppl population))  ; calculated_ppl tem de ser sempre uma estrutura
 		
 	)
-	;(write "hut")
-	;(write calculate_ppl)
-	;(write "jaddd")
 	; 2 Fazer CrossOver Ideia de escolher os n melhores tais que os 
 	; CrossOver entre os n melhores geram o mesmo numero de 
 	; filhos que os elementos da população actual 
-	; Falta mixing rate 0.7 0.3
+	; mixing rate 0.7 0.3
 
 	(setf select_ppl nil)
 	(loop for i from 0 to (floor (/ (list-length population) 2)) do
 		(push (nth (random (list-length calculate_ppl)) calculate_ppl) select_ppl)
 	)
-	(write (list-length select_ppl))
-	(write "oto")
-	;(write select_ppl)
+	
 	;ordena pelo racio
 	(sort select_ppl (lambda(struc1 struc2) (> (candidato-racio struc1) (candidato-racio struc2))))
-	(write select_ppl)
 	; Escolher melhores
 	; Lista que vai receber a nova populacao
 	(setf new_ppl '())
@@ -981,8 +980,8 @@
 			)
 		)
 	)
-	new_ppl
-	;(genetic-alg problem heur_list new_ppl nil)
+
+	(genetic-alg problem heur_list new_ppl nil)
 )
 
 ; Função de fitness --> classifica cada proposta de solucao (calcula racio de pontos/max pontos)
@@ -996,15 +995,13 @@
 
 
 ; calcular heuristica
-(defun joinHeur (state)
+(defun joinHeur (node)
 	(setf heur 0)
 	(if (null const_struc) (return-from joinHeur heur))
 	; heur(state) = A * h1(state) + B * h2 state
-	(loop for i from  0 below (list-length heur_list) do
-	
-		(setf heur (+ heur 
-				(* (funcall (nth i heur_list) state) 
-					(nth i (candidato-constantes const_struc)))))
+	(loop for i from  0 to (- (list-length heur_list) 1) do
+		(incf heur (* (funcall (nth i heur_list) (node-state node)) 
+					(nth i (candidato-constantes const_struc))))
 	)
 	heur
 )
@@ -1012,19 +1009,13 @@
 (defun fitness-fun (problem)
 	
 	(setf copiaProb (copy-structure problem)) 
-		; aplica a*
-		(setf lista_ac (procura-A* copiaProb 'joinHeur))
-		(write "mana")
-		(write lista_ac)
+		; aplica best-first-search
+		
+		(setf pontos (estado-pontos (node-state (best-first-search copiaProb #'joinHeur))))
 		;aplica accoes ao estado do problema
-		(loop for accao in lista_ac do
-			(setf (problema-estado-inicial copiaProb) (resultado (problema-estado-inicial copiaProb) accao))
-		)
-		(write (funcall (problema-custo-caminho copiaProb) (problema-estado-inicial copiaProb)))
-		(if (eq (custo-oportunidade (problema-estado-inicial copiaProb)) 0)
-			0
-			( / ( estado-pontos (problema-estado-inicial copiaProb)) (custo-oportunidade (problema-estado-inicial copiaProb)))
-		)
+		
+		pontos
+		
 )
 
 (defun crossOver (problema pai mae)
@@ -1040,10 +1031,12 @@
 	
 
 	(setf primeiro (make-candidato 
-		:constantes const_list1))
+		:constantes const_list1
+		:racio 0))
 	
 	(setf segundo (make-candidato 
-		:constantes const_list2))
+		:constantes const_list2
+		:racio 0))
 
 	;calcula pontos do primeiro filho
 	(setf const_struc primeiro)
@@ -1062,4 +1055,35 @@
 )
 
 
-(load "utils.lisp")
+; -----------------------------------------------------------
+
+;;; Teste 25 E2
+;;; procura-best num tabuleiro com 4 jogadadas por fazer. Os grupos tem um tempo limitado para conseguir obter pelo menos 500 pontos. 
+;;; deve retornar IGNORE
+(ignore-value (setf a1 '#2A((T T T T NIL NIL T T T T)(T T T NIL NIL NIL T T T T)(T T T NIL NIL NIL T T T T)(T T T NIL NIL NIL T T T T)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL))))
+(setf pecas (random-pecas 6))
+;(procura-best a1 '(t i l l)))
+
+(setf heurlst '())
+(loop for i from 0 to 100 do
+	(setf templst '())
+	(loop for i from 1 to 5 do
+
+		(setf value (* (if (= (random 2) 1) -1 1) (random 100) (/ 1 100)))
+		(setf templst (append templst (list value)))
+	)
+	(setf heurlst (append heurlst (list templst)))
+)
+
+
+(setf state (make-estado
+		:pontos 0
+		:pecas-por-colocar pecas
+		:pecas-colocadas nil
+		:tabuleiro (array->tabuleiro a1)))
+
+(setf problem (make-problema
+				:estado-inicial state
+				:custo-caminho  #'custo-oportunidade))
+
+(load "utils.fas")
