@@ -813,12 +813,10 @@
 ;--------------------------------------------Heuristicas-----------------------------------
 
 
-
 ;Soma das alturas de todas as colunas
-(defun h1 (state)  		;Aggregate height
-	;
-	(let ((aggregate_height 0))
-
+(defun h1 (node)  		;Aggregate height
+	(let ((aggregate_height 0)
+		(state (node-state node)))
 		(loop for i from 0 to 9 do
 			(incf aggregate_height (tabuleiro-altura-coluna (estado-tabuleiro state) i))	
 		)
@@ -826,10 +824,35 @@
 )
 
 ;heuristic complete lines??
-; nr de buracos no tabuleiro
-(defun h3 (state) 		;buracos cobertos do lado de cima
-	(let ((holes 0))
+(defun h2 (node)
 
+	(let ((state (node-state node)))
+		(pontos_now (estado-pontos state))
+		(pontos_pai (estado-pontos (node-state (node-parent node))) )
+		
+		
+		(cond 
+		((eq (- pontos_now pontos_pai) 0) 0)
+		((eq (- pontos_now pontos_pai) 100) 1)
+		((eq (- pontos_now pontos_pai) 300) 2)
+		((eq (- pontos_now pontos_pai) 500) 3)
+		((eq (- pontos_now pontos_pai) 800) 4)
+		)	 
+	)
+
+)
+
+	;(make-estado 
+	;	:pontos points
+	;	:pecas-por-colocar (cdr(cons nil pieces_to_place))
+	;	:pecas-colocadas (cdr(cons nil pieces_placed))
+	;	:tabuleiro board)
+
+
+; nr de buracos no tabuleiro
+(defun h3 (node) 		;buracos cobertos do lado de cima
+	(let ((holes 0)
+		(state (node-state node)))
 		(loop for i from 0 to 9 do
 			(loop for j from (- (tabuleiro-altura-coluna (estado-tabuleiro state) i) 1) downto 0 do
 				(if (tabuleiro-preenchido-p (estado-tabuleiro state) j i)
@@ -843,8 +866,9 @@
 )
 
 
-(defun h4 (state)  		;sum dos modulos das diferencas de alturas aka slopes
-	(let ((count 0))
+(defun h4 (node)  		;sum dos modulos das diferencas de alturas aka slopes
+	(let ((count 0)
+		(state (node-state node)))
 		(loop for i from 0 to 8 do
 			(incf count (abs(- (tabuleiro-altura-coluna (estado-tabuleiro state) i) (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))))
 		)
@@ -853,8 +877,9 @@
 )
 
 ;nr de pecas colocadas
-(defun h5 (state)   	
-	(let ((pecas 0))
+(defun h5 (node)   	
+	(let ((pecas 0)
+		(state (node-state node)))
 		(loop for i from 0 to 9 do
 			(loop for j from 0 to (- (tabuleiro-altura-coluna (estado-tabuleiro state) i) 1) do
 				(if (tabuleiro-preenchido-p (estado-tabuleiro state) j i)
@@ -867,8 +892,9 @@
 )
 
 ;Devolve maior slope
-(defun h6 (state)  		;higher slope
-	(let ((maior 0))
+(defun h6 (node)  		;higher slope
+	(let ((maior 0)
+		(state (node-state node)))
 		(loop for i from 0 to 8 do
 			(if (> (abs(- (tabuleiro-altura-coluna (estado-tabuleiro state) i) (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))) maior)
 				(setf maior (abs(- (tabuleiro-altura-coluna (estado-tabuleiro state) i) (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))))
@@ -878,7 +904,6 @@
 	maior
 	)
 )
-
 
 ;(defstruct problema 
 ;	estado-inicial
@@ -1000,7 +1025,7 @@
 	(if (null const_struc) (return-from joinHeur heur))
 	; heur(state) = A * h1(state) + B * h2 state
 	(loop for i from  0 to (- (list-length heur_list) 1) do
-		(incf heur (* (funcall (nth i heur_list) (node-state node)) 
+		(incf heur (* (funcall (nth i heur_list) node) 
 					(nth i (candidato-constantes const_struc))))
 	)
 	heur
@@ -1057,6 +1082,8 @@
 
 ; -----------------------------------------------------------
 
+(load "utils.fas")
+
 ;;; Teste 25 E2
 ;;; procura-best num tabuleiro com 4 jogadadas por fazer. Os grupos tem um tempo limitado para conseguir obter pelo menos 500 pontos. 
 ;;; deve retornar IGNORE
@@ -1067,7 +1094,7 @@
 (setf heurlst '())
 (loop for i from 0 to 100 do
 	(setf templst '())
-	(loop for i from 1 to 5 do
+	(loop for i from 1 to 6 do
 
 		(setf value (* (if (= (random 2) 1) -1 1) (random 100) (/ 1 100)))
 		(setf templst (append templst (list value)))
@@ -1085,5 +1112,3 @@
 (setf problem (make-problema
 				:estado-inicial state
 				:custo-caminho  #'custo-oportunidade))
-
-(load "utils.fas")
