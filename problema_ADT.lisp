@@ -635,9 +635,8 @@
 
 (defun make-initial-queue (problem queuing-fn)
   (setf q (make-empty-queue))
-   	(write "money")
-    (enqueue-at-front q (list (create-start-node problem)))
-    ;(funcall queuing-fn q (list (create-start-node problem)))
+  	;(enqueue-at-front q (list (create-start-node problem)))
+    (funcall queuing-fn q (list (create-start-node problem)))
     q
  )
 
@@ -651,12 +650,16 @@
   ; First make sure the queue is in a consistent state
   (setf items (reverse items))       ;Para criterio de desempate queremos a que foi expandida depois
   (setf (q-key q) key)
+   
   (when (null (q-elements q))
     (setf (q-elements q) (make-heap)))
+  
   ; Now insert the items
   (loop while items do    ;ERA UM FOR EACH, PODE TER MUDADO ALGUMA COISA, NAO SEI COMO E' FEITA A INSERCAO
-  		(let ((item (pop items)))
-       		(heap-insert (q-elements q) item key))))
+  		(setf item (pop items))
+       	(setf heap-insert (q-elements q) item key)
+  		
+  		))
 
 
 (defun remove-front (q)
@@ -707,24 +710,17 @@
 
 (defun general-search (problem queuing-fn)
 	; PROBLEMA AQUI
-	(write queuing-fn)
-	(write (make-initial-queue problem queuing-fn))
-	(write "mama")
-  	
+
   (setf nodes (make-initial-queue problem queuing-fn))
-  	(write nodes)
-  	(write "jajons")
     (loop (if (empty-queue? nodes) (return-from general-search nil))			
 	  (setq node (remove-front nodes))
-
-	  ;(if (funcall (problema-solucao problem) (node-state node))
-	   ;	(RETURN node)
-	  ;	(funcall queuing-fn nodes (expand node problem))
-	  ;)
+	  (if (funcall (problema-solucao problem) (node-state node))
+	   	(RETURN node)
+ 		(funcall queuing-fn nodes (expand node problem))
+	  )
 	                        
   	)
-
-  
+ 
 )
 
 
@@ -785,6 +781,7 @@
   ;Put an item into a heap.
   ; Note that ITEM is the value to be inserted, and KEY is a function
   ; that extracts the numeric value from the item.
+
   (vector-push-extend nil heap)
   (let ((i (- (length heap) 1))
 	(val (funcall key item)))
@@ -809,8 +806,21 @@
 		:pecas-colocadas nil
 		:tabuleiro (array->tabuleiro array)))
 
+
+
+;(defstruct problema 
+;	estado-inicial
+;	solucao
+;	accoes
+;	resultado
+;	custo-caminho)
+
+
 	(setf problem (make-problema
 					:estado-inicial state
+					:solucao #'solucao
+					:accoes #'accoes
+					:resultado #'resultado
 					:custo-caminho  #'custo-oportunidade))
 	(genetic-alg problem heur_list population T)
 	;(best-first-search problem fn-heuristica)
@@ -934,8 +944,9 @@
 		(T 	(setf calculate_ppl population))  ; calculated_ppl tem de ser sempre uma estrutura
 		
 	)
-	(write calculate_ppl)
-	(write "jaddd")
+	;(write "hut")
+	;(write calculate_ppl)
+	;(write "jaddd")
 	; 2 Fazer CrossOver Ideia de escolher os n melhores tais que os 
 	; CrossOver entre os n melhores geram o mesmo numero de 
 	; filhos que os elementos da população actual 
@@ -945,10 +956,12 @@
 	(loop for i from 0 to (floor (/ (list-length population) 2)) do
 		(push (nth (random (list-length calculate_ppl)) calculate_ppl) select_ppl)
 	)
-	(write select_ppl)
+	(write (list-length select_ppl))
+	(write "oto")
+	;(write select_ppl)
 	;ordena pelo racio
 	(sort select_ppl (lambda(struc1 struc2) (> (candidato-racio struc1) (candidato-racio struc2))))
-
+	(write select_ppl)
 	; Escolher melhores
 	; Lista que vai receber a nova populacao
 	(setf new_ppl '())
@@ -991,7 +1004,8 @@
 			)
 		)
 	)
-	(genetic-alg problem heur_list new_ppl nil)
+	new_ppl
+	;(genetic-alg problem heur_list new_ppl nil)
 )
 
 ; Função de fitness --> classifica cada proposta de solucao (calcula racio de pontos/max pontos)
@@ -1011,7 +1025,6 @@
 	; heur(state) = A * h1(state) + B * h2 state
 	(loop for i from  0 below (list-length heur_list) do
 	
-		(write (nth i (candidato-constantes const_struc)))
 		(setf heur (+ heur 
 				(* (funcall (nth i heur_list) state) 
 					(nth i (candidato-constantes const_struc)))))
@@ -1020,15 +1033,17 @@
 )
 
 (defun fitness-fun (problem)
+	
 	(setf copiaProb (copy-structure problem)) 
 		; aplica a*
 		(setf lista_ac (procura-A* copiaProb 'joinHeur))
+		(write "mana")
+		(write lista_ac)
 		;aplica accoes ao estado do problema
 		(loop for accao in lista_ac do
 			(setf (problema-estado-inicial copiaProb) (resultado (problema-estado-inicial copiaProb) accao))
 		)
-		(write copiaProb)
-		(write (custo-oportunidade (problema-estado-inicial copiaProb)) )
+		(write (funcall (problema-custo-caminho copiaProb) (problema-estado-inicial copiaProb)))
 		(if (eq (custo-oportunidade (problema-estado-inicial copiaProb)) 0)
 			0
 			( / ( estado-pontos (problema-estado-inicial copiaProb)) (custo-oportunidade (problema-estado-inicial copiaProb)))
@@ -1042,26 +1057,25 @@
 	(setf const_list1 '())
 	(setf const_list2 '())
 	(loop for j from 0 below (list-length (candidato-constantes pai)) do
-		(setf const_list1 (append const_list1 '(+ (* racio (nth j (candidato-constantes pai))) (* (- 1 racio) (nth j (candidato-constantes mae))))))
-		(setf const_list2 (append const_list2 '(+ (* (- 1 racio) (nth j (candidato-constantes pai))) (* racio (nth j (candidato-constantes mae))))))
-
-
-
+		(push (+ (* racio (nth j (candidato-constantes pai))) (* (- 1 racio) (nth j (candidato-constantes mae)))) const_list1)
+		(push (+ (* (- 1 racio) (nth j (candidato-constantes pai))) (* racio (nth j (candidato-constantes mae)))) const_list2)
 	)
+	
+
 	(setf primeiro (make-candidato 
 		:constantes const_list1))
-	; QUALQUER COISA MAL candidato é lista de constantes
+	
 	(setf segundo (make-candidato 
 		:constantes const_list2))
 
 	;calcula pontos do primeiro filho
 	(setf const_struc primeiro)
-	(setf (candidato-racio const_struc) (fitness-fun problema))
+	(setf (candidato-racio primeiro) (fitness-fun problema))
 	(setf primeiro const_struc)
 
 	;calcula pontos do segundo filho
 	(setf const_struc segundo)
-	(setf (candidato-racio const_struc) (fitness-fun problema))
+	(setf (candidato-racio segundo) (fitness-fun problema))
 	(setf segundo const_struc)
 
 	(if (> (candidato-racio primeiro) (candidato-racio segundo))
