@@ -202,8 +202,7 @@
 	solucao ; funcao
 	accoes 	;funcao
 	resultado ; funcao
-	custo-caminho ;funcao
-)
+	custo-caminho ) ;funcao
 
 (defun solucao (state)              
 	(if (and (not (tabuleiro-topo-preenchido-p (estado-tabuleiro state)))
@@ -634,11 +633,9 @@
   (= (length (q-elements q)) 0))
 
 (defun make-initial-queue (problem queuing-fn)
-  (setf q (make-empty-queue))
-  	;(enqueue-at-front q (list (create-start-node problem)))
+  (let ((q (make-empty-queue)))
     (funcall queuing-fn q (list (create-start-node problem)))
-    q
- )
+    q))
 
 (defun enqueue-at-front (q items)
   ;Add a list of items to the front of the queue.
@@ -650,16 +647,12 @@
   ; First make sure the queue is in a consistent state
   (setf items (reverse items))       ;Para criterio de desempate queremos a que foi expandida depois
   (setf (q-key q) key)
-   
   (when (null (q-elements q))
     (setf (q-elements q) (make-heap)))
-  
   ; Now insert the items
   (loop while items do    ;ERA UM FOR EACH, PODE TER MUDADO ALGUMA COISA, NAO SEI COMO E' FEITA A INSERCAO
-  		(setf item (pop items))
-       	(setf heap-insert (q-elements q) item key)
-  		
-  		))
+  		(let ((item (pop items)))
+       		(heap-insert (q-elements q) item key))))
 
 
 (defun remove-front (q)
@@ -709,18 +702,16 @@
 
 
 (defun general-search (problem queuing-fn)
-	; PROBLEMA AQUI
-
-  (setf nodes (make-initial-queue problem queuing-fn))
-    (loop (if (empty-queue? nodes) (return-from general-search nil))			
+  (let ((nodes (make-initial-queue problem queuing-fn)) node)
+    (loop (if (empty-queue? nodes) (RETURN nil))			
 	  (setq node (remove-front nodes))
+
 	  (if (funcall (problema-solucao problem) (node-state node))
 	   	(RETURN node)
- 		(funcall queuing-fn nodes (expand node problem))
+	  	(funcall queuing-fn nodes (expand node problem))
 	  )
-	                        
-  	)
- 
+	)                        
+  )
 )
 
 
@@ -734,16 +725,13 @@
 
 (defun procura-A*(problem heuristic)           ;perceber o node,sintaxe lambda function
 	
-	(solution-actions (best-first-search problem  #'(lambda(node) (return (+ (funcall (problema-custo-caminho problem) (node-state node)) (funcall heuristic (node-state node)))) )))
-
+	(solution-actions (best-first-search problem  #'(lambda(node) (+ (funcall (problema-custo-caminho problem) (node-state node)) (funcall heuristic (node-state node))))))
 )
 
 (defun best-first-search (problem eval-fn)
-
   ;Search the nodes with the best evaluation first.
   (general-search problem #'(lambda (old-q nodes) 
-			      (enqueue-by-priority old-q nodes eval-fn)))
-  )
+			      (enqueue-by-priority old-q nodes eval-fn))))
 
 
 ;-------------------------------HEAPS--------------------------------------------
@@ -781,11 +769,10 @@
   ;Put an item into a heap.
   ; Note that ITEM is the value to be inserted, and KEY is a function
   ; that extracts the numeric value from the item.
-
   (vector-push-extend nil heap)
   (let ((i (- (length heap) 1))
 	(val (funcall key item)))
-    (loop (when(and (> i 0) (>= (heap-val heap (heap-parent i) key) val)) (return T))  
+    (loop while (and (> i 0) (>= (heap-val heap (heap-parent i) key) val)) do 
     	(setf (aref heap i) (aref heap (heap-parent i))
 	       i (heap-parent i)))
     (setf (aref heap i) item)))
@@ -796,42 +783,35 @@
 
 
 ; ------------------------------ Procura Best
-(defun procura-best (array pecas-por-colocar population)
+(defun procura-best (array pecas-por-colocar consta)
 	;procura-best : array x lista pecas -> accoes
 	;Devolve sequencia de accoes que levam a maximiazar pontos
 
-	(setf state (make-estado
-		:pontos 0
-		:pecas-por-colocar pecas-por-colocar 
-		:pecas-colocadas nil
-		:tabuleiro (array->tabuleiro array)))
+	(let ((state nil)
+		(problem nil))
+	
+		(setf state (cria-estado 0 pecas-por-colocar nil (array->tabuleiro array)))
+		;(setf state (make-estado  ;cria-estado
+		;:pontos 0
+		;:pecas-por-colocar pecas-por-colocar
+		;:pecas-colocadas nil
+		;:tabuleiro (array->tabuleiro array)))
 
+		(setf problem (make-problema
+					:estado-inicial state))
 
-
-;(defstruct problema 
-;	estado-inicial
-;	solucao
-;	accoes
-;	resultado
-;	custo-caminho)
-
-
-	(setf problem (make-problema
-					:estado-inicial state
-					:solucao #'solucao
-					:accoes #'accoes
-					:resultado #'resultado
-					:custo-caminho  #'custo-oportunidade))
-	(genetic-alg problem heur_list population T)
-	;(best-first-search problem fn-heuristica)
+		(genetic-alg problem heur_list consta T) 
+		;(best-first-search problem #'h1)  ;h1 apenas para exemplo
+	)
 )
+
 
 
 ;--------------------------------------------Heuristicas-----------------------------------
 
 
 
-;Soma das alturas de todas as colunas     (minimizar)
+;Soma das alturas de todas as colunas
 (defun h1 (state)  		;Aggregate height
 	;
 	(let ((aggregate_height 0))
@@ -843,7 +823,7 @@
 )
 
 ;heuristic complete lines??
-; nr de buracos no tabuleiro      (minimizar)
+; nr de buracos no tabuleiro
 (defun h3 (state) 		;buracos cobertos do lado de cima
 	(let ((holes 0))
 
@@ -860,7 +840,7 @@
 )
 
 
-(defun h4 (state)  		;sum dos modulos das diferencas de alturas aka slopes (minimizar)
+(defun h4 (state)  		;sum dos modulos das diferencas de alturas aka slopes
 	(let ((count 0))
 		(loop for i from 0 to 8 do
 			(incf count (abs(- (tabuleiro-altura-coluna (estado-tabuleiro state) i) (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))))
@@ -869,8 +849,7 @@
 	)
 )
 
-
-;nr de pecas colocadas    (minimizar)
+;nr de pecas colocadas
 (defun h5 (state)   	
 	(let ((pecas 0))
 		(loop for i from 0 to 9 do
@@ -887,16 +866,14 @@
 ;Devolve maior slope
 (defun h6 (state)  		;higher slope
 	(let ((maior 0))
-		(loop for i from 0 below 9 do
+		(loop for i from 0 to 9 do
 			(if (> (abs(- (tabuleiro-altura-coluna (estado-tabuleiro state) i) (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))) maior)
 				(setf maior (abs(- (tabuleiro-altura-coluna (estado-tabuleiro state) i) (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))))
+				()
 			)
 		)
-	maior
 	)
-
 )
-
 
 
 ;(defstruct problema 
