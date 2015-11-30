@@ -609,9 +609,21 @@
 )
 
 (defun h-cost (problem state)
-	(ignore-value problem)
-	(ignore-value state)
-	0
+  ;(defstruct node
+  ;(state (required))        ; a state in the domain
+  ;(parent nil)              ; the parent node of this node
+  ;(action nil)              ; the domain action leading to state
+  ;(depth 0)                 ; depth of node in tree (root = 0)
+  ;(g-cost 0)                ; path cost from root to node
+  ;(h-cost 0)                ; estimated distance from state to goal
+  ;(f-cost 0)                ; g-cost + h-cost
+  ;)
+	(let ((node nil))
+		(setf node (make-node 
+				:state state))
+
+		(* -1 (joinHeur node))
+	)
 )
 ;return heuristic-cost;
 
@@ -841,6 +853,7 @@
 		((eq (- pontos_now pontos_pai) 300) 2)
 		((eq (- pontos_now pontos_pai) 500) 3)
 		((eq (- pontos_now pontos_pai) 800) 4)
+		(T  0)
 		)	 
 	)
 
@@ -1092,7 +1105,7 @@
 ;;; procura-best num tabuleiro com 4 jogadadas por fazer. Os grupos tem um tempo limitado para conseguir obter pelo menos 500 pontos. 
 ;;; deve retornar IGNORE
 (ignore-value (setf a1 '#2A((T T T T NIL NIL T T T T)(T T T NIL NIL NIL T T T T)(T T T NIL NIL NIL T T T T)(T T T NIL NIL NIL T T T T)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL))))
-(setf pecas (random-pecas 6))
+(setf pecas '(t i l l))
 ;(procura-best a1 '(t i l l)))
 
 (setf heurlst '())
