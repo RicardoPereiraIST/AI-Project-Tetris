@@ -816,9 +816,10 @@
 
 
 ;Soma das alturas de todas as colunas
-(defun h1 (state)  		;Aggregate height
-	;
-	(let ((aggregate_height 0))
+(defun h1 (node)  		;Aggregate height
+
+	(let ((aggregate_height 0)
+		(state (node-state node)))
 
 		(loop for i from 0 to 9 do
 			(incf aggregate_height (tabuleiro-altura-coluna (estado-tabuleiro state) i))	
@@ -828,10 +829,14 @@
 
 ;heuristic complete lines??
 (defun h2 (node)
-
-	(let ((state (node-state node)))
-		(pontos_now (estado-pontos state))
-		(pontos_pai (estado-pontos (node-state (node-parent node))) )
+	(let ((state (node-state node))
+		(pontos_pai 0)
+		(pontos_now 0))
+		(setf pontos_now (estado-pontos state))
+		(if(null (node-parent node)) 
+			()
+			(setf pontos_pai (estado-pontos (node-state (node-parent node)))) 	
+		)
 		
 		
 		(cond 
@@ -854,8 +859,8 @@
 
 ; nr de buracos no tabuleiro
 (defun h3 (node) 		;buracos cobertos do lado de cima
-	(let ((holes 0))
-		((state (node-state node)))
+	(let ((holes 0)
+		(state (node-state node)))
 		(loop for i from 0 to 9 do
 			(loop for j from (- (tabuleiro-altura-coluna (estado-tabuleiro state) i) 1) downto 0 do
 				(if (tabuleiro-preenchido-p (estado-tabuleiro state) j i)
@@ -869,9 +874,10 @@
 )
 
 
-(defun h4 (node)  		;sum dos modulos das diferencas de alturas aka slopes
-	(let ((count 0))
-		((state (node-state node)))
+(defun h4 (node)
+	;sum dos modulos das diferencas de alturas aka slopes
+	(let ((count 0)
+		(state (node-state node)))
 		(loop for i from 0 to 8 do
 			(incf count (abs(- (tabuleiro-altura-coluna (estado-tabuleiro state) i) (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))))
 		)
@@ -880,9 +886,10 @@
 )
 
 ;nr de pecas colocadas
-(defun h5 (node)   	
-	(let ((pecas 0))
-		((state (node-state node)))
+(defun h5 (node)
+   	
+	(let ((pecas 0)
+		(state (node-state node)))
 		(loop for i from 0 to 9 do
 			(loop for j from 0 to (- (tabuleiro-altura-coluna (estado-tabuleiro state) i) 1) do
 				(if (tabuleiro-preenchido-p (estado-tabuleiro state) j i)
@@ -895,9 +902,10 @@
 )
 
 ;Devolve maior slope
-(defun h6 (node)  		;higher slope
-	(let ((maior 0))
-		((state (node-state node)))
+(defun h6 (node)
+		;higher slope
+	(let ((maior 0)
+		(state (node-state node)))
 		(loop for i from 0 to 8 do
 			(if (> (abs(- (tabuleiro-altura-coluna (estado-tabuleiro state) i) (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))) maior)
 				(setf maior (abs(- (tabuleiro-altura-coluna (estado-tabuleiro state) i) (tabuleiro-altura-coluna (estado-tabuleiro state) (+ i 1)))))
@@ -910,9 +918,12 @@
 
 ; calcular heuristica
 (defun joinHeur (node)
-	(+ (* 0.48335236 (h1 node) (* -0.29525357  (h3 node)) 
-		(* -0.12678  (h4 node)) (* 0.2999297 (h5 node))
-		(* 0.5709712  (h6 node))))
+	     
+	(+ (* -0.16087401 (h1 node))  (* 0.061028987 (h2 node))  (* 0.3365213  (h3 node)) 
+		(* 0.4575976 (h4 node)) (* 0.30086797 (h5 node))
+		(* 0.004548114  (h6 node)))
 )
 
 (load "utils.fas")
+
+
