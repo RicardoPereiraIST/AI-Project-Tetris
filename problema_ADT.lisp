@@ -804,7 +804,8 @@
 				   	:resultado #'resultado
 				   	:custo-caminho #'custo-oportunidade))
 
-		(solution-actions (best-first-search problem #'joinHeur) )
+		;(solution-actions (best-first-search problem #'joinHeur) )
+		(procura-A* problem #'qualidade)
 	)
 )
 
