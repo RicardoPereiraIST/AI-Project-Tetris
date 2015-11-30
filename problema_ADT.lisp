@@ -1,3 +1,8 @@
+;	Grupo: TG033
+;	Elementos:	Miguel Carvalho (78052)
+;				Ricardo Pereira (78051)
+;				Tiago Rosado (77958)
+;
 ;;-------------------------------Tipo ACCAO----------------------------------------
 (defun cria-accao (int array) 
 	(cons int array)
@@ -609,23 +614,10 @@
 	(funcall (problema-custo-caminho problem) state)
 )
 
-
 (defun h-cost (problem state)
-	;(defstruct problema 
-	;estado-inicial
-	;solucao ; funcao
-	;accoes 	;funcao
-	;resultado ; funcao
-	;custo-caminho ) ;funcao
 	(ignore-value problem)
-	(let ((node nil))
-
-		(setf node (make-node 
-				:state state))
-
-		(joinHeur node)
-	)
-
+	(ignore-value state)
+	0
 )
 ;return heuristic-cost;
 
@@ -817,7 +809,6 @@
 				   	:resultado #'resultado
 				   	:custo-caminho #'custo-oportunidade))
 
-
 		;(solution-actions (best-first-search problem #'joinHeur) )
 		(procura-A* problem #'qualidade)
 	)
@@ -860,7 +851,6 @@
 		((eq (- pontos_now pontos_pai) 300) 2)
 		((eq (- pontos_now pontos_pai) 500) 3)
 		((eq (- pontos_now pontos_pai) 800) 4)
-		(T 0)
 		)	 
 	)
 
@@ -934,12 +924,10 @@
 
 ; calcular heuristica
 (defun joinHeur (node)
-	       
-	(+ (*  0.535181 (h1 node))  (* 0.5042483  (h2 node))  (* -0.14608751   (h3 node)) 
-		(* 0.08778972 (h4 node)) (* -0.46441257 (h5 node))
-		(* 0.035879478 (h6 node)))
+	     
+	(+ (* -0.16087401 (h1 node))  (* 0.061028987 (h2 node))  (* 0.3365213  (h3 node)) 
+		(* 0.4575976 (h4 node)) (* 0.30086797 (h5 node))
+		(* 0.004548114  (h6 node)))
 )
 
 (load "utils.fas")
-
-
