@@ -825,10 +825,14 @@
 
 ;heuristic complete lines??
 (defun h2 (node)
-
-	(let ((state (node-state node)))
-		(pontos_now (estado-pontos state))
-		(pontos_pai (estado-pontos (node-state (node-parent node))) )
+	(let ((state (node-state node))
+		(pontos_pai 0)
+		(pontos_now 0))
+		(setf pontos_now (estado-pontos state))
+		(if(null (node-parent node)) 
+			()
+			(setf pontos_pai (estado-pontos (node-state (node-parent node)))) 	
+		)
 		
 		
 		(cond 
@@ -928,7 +932,7 @@
 ; heur_list
 ; const_strc
 
-(setf heur_list '(h1 h3 h4 h5 h6))
+(setf heur_list '(h1 h2 h3 h4 h5 h6))
 
 (setf const_struc nil)
 
