@@ -800,7 +800,7 @@
 		(setf problem (make-problema
 					:estado-inicial state))
 
-		(best-first-search problem #'h1)  ;h1 apenas para exemplo
+		(best-first-search problem #'hboss)  ;h1 apenas para exemplo
 	)
 )
 
@@ -808,7 +808,9 @@
 
 ;--------------------------------------------Heuristicas-----------------------------------
 
-
+(defun hboss(state)
+	(+ (* -0.510066 (h1 state)) (* 0 (h5 state)) (* -0.35663 (h3 state)) (* -0.184483 (h4 state)))
+)
 
 ;Soma das alturas de todas as colunas
 (defun h1 (state)  		;Aggregate height
