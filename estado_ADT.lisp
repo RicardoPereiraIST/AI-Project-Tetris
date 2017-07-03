@@ -14,12 +14,11 @@
 )
 
 (defun copia-estado(state)
-	(cria-estado (estado-pontos state) 
-		;;?? copy seq
-				(copy-seq(estado-pecas-por-colocar state))
-				(copy-seq(estado-pecas-colocadas state))
-				(copy-seq(estado-tabuleiro state))
-	)	
+	(make-estado 
+		:pontos (estado-pontos state)  
+		:pecas-por-colocar (estado-pecas-por-colocar state) 
+		:pecas-colocadas (estado-pecas-colocadas state) 
+		:tabuleiro (estado-tabuleiro state)) 
 )
 
 
